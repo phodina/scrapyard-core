@@ -16,7 +16,9 @@ struct MCUConf {
 	Name : String,
 	Line : String,
 	Family : String,
-	Package : String 
+	Package : String,
+	IPs: Option<Vec<IP>>,
+	Pins: Option<Vec<Pin>>
 }
 
 #[allow(non_snake_case)]
