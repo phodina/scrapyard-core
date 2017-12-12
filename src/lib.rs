@@ -19,6 +19,21 @@ struct MCUConf {
 	Package : String 
 }
 
+#[allow(non_snake_case)]
+#[derive(Serialize, Deserialize, Debug)]
+struct IP {
+	ConfigFile : String,
+	Name : String
+}
+
+#[allow(non_snake_case)]
+#[derive(Serialize, Deserialize, Debug)]
+struct Pin {
+	Name : String,
+	Position : String,
+	Type : String
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -50,5 +65,31 @@ mod tests {
     	assert_eq!(mcu_conf.Name, "STM32F030C6Tx");
     	assert_eq!(mcu_conf.Package, "LQFP48");
     	assert_eq!(mcu_conf.Ram, 4);
+    }
+
+    #[test]
+    fn pin_ok() {
+
+    	let json = r#"{ "ConfigFile" : "adc.conf",
+    					"Name" : "ADC"}"#;
+    	
+    	let ip : IP = serde_json::from_str(json).unwrap();
+
+    	assert_eq!(ip.ConfigFile, "adc.conf");
+    	assert_eq!(ip.Name, "ADC");
+    }
+
+    #[test]
+    fn ip_ok() {
+
+    	let json = r#"{ "Name" : "adc.conf",
+    					"Position" : "4",
+    					"Type" : "Power"}"#;
+    	
+    	let pin : Pin = serde_json::from_str(json).unwrap();
+
+    	assert_eq!(pin.Name, "adc.conf");
+    	assert_eq!(pin.Position, "4");
+    	assert_eq!(pin.Type, "Power");
     }
 }
