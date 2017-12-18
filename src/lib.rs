@@ -7,7 +7,8 @@ enum Position {
 }
 
 struct IOPin {
-	reset: bool
+	reset: bool,
+	label: String
 }
 
 impl IOPin {
@@ -18,6 +19,15 @@ impl IOPin {
 
 	fn is_reset(&self) -> bool {
 		self.reset
+	}
+
+	fn set_label (&mut self, label : &str) {
+
+		self.label = label.to_string();
+	}
+
+	fn label(&self) -> &str {
+	    &self.label
 	}
 }
 
@@ -64,6 +74,20 @@ impl Pin {
 		    _ => None,
 		}
 	}
+
+	fn set_label(&mut self, label: &str) {
+		match *self {
+		    Pin::IO{ref mut params, ..} => params.set_label(label),
+		    _ => (),
+		}
+	}
+
+	fn label(&self) -> Option<&str> {
+		match *self {
+		    Pin::IO{ref params, ..} => Some(params.label()),
+		    _ => None,
+		}
+	}
 }
 
 #[cfg(test)]
@@ -83,10 +107,23 @@ mod tests {
 	#[test]
     fn pin_reset() {
 
-    	let pin = Pin::IO{ name: "PA3".to_string(), position: Position::Grid(4,3), params: Box::new(IOPin{reset : true})};
+    	let pin = Pin::IO{ name: "PA3".to_string(), position: Position::Grid(4,3), params: Box::new(IOPin{reset : true, label : "".to_string()})};
 
     	assert_eq!(pin.name(), "PA3");
         assert_eq!(*pin.position() , Position::Grid(4,3));
     	assert_eq!(pin.is_reset(), Some(true));
+    }    
+
+	#[test]
+    fn pin_label() {
+
+    	let mut pin = Pin::IO{ name: "PA3".to_string(), position: Position::Grid(4,3), params: Box::new(IOPin{reset : true, label : "".to_string()})};
+
+    	pin.set_label("PWM");
+
+    	assert_eq!(pin.name(), "PA3");
+        assert_eq!(*pin.position() , Position::Grid(4,3));
+    	assert_eq!(pin.is_reset(), Some(true));
+    	assert_eq!(pin.label(), Some("PWM"));
     }    
 }
