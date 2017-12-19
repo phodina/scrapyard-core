@@ -8,7 +8,9 @@ enum Position {
 
 struct IOPin {
 	reset: bool,
-	label: String
+	label: String,
+	signals: Vec<String>,
+	current: Option<usize>
 }
 
 impl IOPin {
@@ -29,6 +31,28 @@ impl IOPin {
 	fn label(&self) -> &str {
 	    &self.label
 	}
+
+	fn signals(&self) -> &Vec<String> {
+		&self.signals
+	}
+
+	fn select_signal(&mut self, signal: &str) -> bool {
+		/*
+		let idx = signals.iter().position(|&r| r == str);
+		match idx {
+			Some(signal) => self.current = Some(signal),
+			None => (),
+		}*/
+		true
+	}
+
+	fn current_signal(&self) -> Option<&str> {
+	
+		match self.current {
+			Some(idx) => Some(&self.signals[idx]),
+			None => None
+		}
+	}
 }
 
 enum Pin {
@@ -41,7 +65,7 @@ enum Pin {
 
 impl Pin {
 
-	fn name(&self) ->  &str {
+	pub fn name(&self) ->  &str {
 		match *self {
 			Pin::NC{ref name, ..} => &name,
 			Pin::IO{ref name, ..} => &name,
@@ -51,7 +75,7 @@ impl Pin {
 		}
 	}
 
-	fn position(&self) -> &Position {
+	pub fn position(&self) -> &Position {
 		match *self {
 			Pin::NC{ref position, ..} => &position,
 			Pin::IO{ref position, ..} => &position,
@@ -61,30 +85,51 @@ impl Pin {
 		}
 	}
 
-	fn reset(&mut self) {
+	pub fn reset(&mut self) {
 		match *self {
 		    Pin::IO{ref mut params, ..} => params.reset(),
 		    _ => (),
 		}
 	}
 
-	fn is_reset(&self) -> Option<bool> {
+	pub fn is_reset(&self) -> Option<bool> {
 		match *self {
 		    Pin::IO{ref params, ..} => Some(params.is_reset()),
 		    _ => None,
 		}
 	}
 
-	fn set_label(&mut self, label: &str) {
+	pub fn set_label(&mut self, label: &str) {
 		match *self {
 		    Pin::IO{ref mut params, ..} => params.set_label(label),
 		    _ => (),
 		}
 	}
 
-	fn label(&self) -> Option<&str> {
+	pub fn label(&self) -> Option<&str> {
 		match *self {
 		    Pin::IO{ref params, ..} => Some(params.label()),
+		    _ => None,
+		}
+	}
+
+	pub fn signals(&self) -> Option<&Vec<String>>{
+		match *self {
+		    Pin::IO{ref params, ..} => Some(params.signals()),
+		    _ => None,
+		}
+	}
+
+	pub fn select_signal(& mut self, signal: &str) -> Option<bool> {
+		match *self {
+		    Pin::IO{ref mut params, ..} => Some(params.select_signal(signal)),
+		    _ => None,
+		}
+	}
+
+	pub fn current_signal(&self) -> Option<&str> {
+		match *self {
+		    Pin::IO{ref params, ..} => params.current_signal(),
 		    _ => None,
 		}
 	}
@@ -107,23 +152,18 @@ mod tests {
 	#[test]
     fn pin_reset() {
 
-    	let pin = Pin::IO{ name: "PA3".to_string(), position: Position::Grid(4,3), params: Box::new(IOPin{reset : true, label : "".to_string()})};
+    	let pin = Pin::IO{ name: "PA3".to_string(), position: Position::Grid(4,3), params: Box::new(IOPin{reset : true, label : "".to_string(), signals: vec![], current: None})};
 
-    	assert_eq!(pin.name(), "PA3");
-        assert_eq!(*pin.position() , Position::Grid(4,3));
     	assert_eq!(pin.is_reset(), Some(true));
     }    
 
 	#[test]
     fn pin_label() {
 
-    	let mut pin = Pin::IO{ name: "PA3".to_string(), position: Position::Grid(4,3), params: Box::new(IOPin{reset : true, label : "".to_string()})};
+    	let mut pin = Pin::IO{ name: "PA3".to_string(), position: Position::Grid(4,3), params: Box::new(IOPin{reset : true, label : "".to_string(), signals: vec![], current: None})};
 
     	pin.set_label("PWM");
 
-    	assert_eq!(pin.name(), "PA3");
-        assert_eq!(*pin.position() , Position::Grid(4,3));
-    	assert_eq!(pin.is_reset(), Some(true));
     	assert_eq!(pin.label(), Some("PWM"));
     }    
 }
