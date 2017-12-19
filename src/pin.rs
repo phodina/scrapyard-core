@@ -135,6 +135,123 @@ impl Pin {
 	}
 }
 
+// Pins class
+//
+//    Holds configuration for all the pins. All pin modifications are connected to slots of this class.
+//
+//    \sa Peripheral, Pin
+//
+struct Pins {
+	pins : Vec<Pin>
+}
+
+impl Pins {
+
+	fn find_pin(&self, name : &str) {
+
+		for pin in &self.pins {
+
+			if name == pin.name() {
+
+				break;
+				}
+			else {
+				match pin.signals() {
+					Some(ref idx) => break,
+					None => ()
+				}
+			}
+		}
+
+ //                    for (auto j = ioPin->getIOPinFunctions().begin(); j != ioPin->getIOPinFunctions().end(); j++) {
+
+ //                        if ((*j).contains(str.toUpper())) {
+
+ //                            pinsToHighlight.append(pins.indexOf(*i));
+ //                            break;
+ //                            }
+ //                        }
+ //                    
+ //    emit highlightPins (pinsToHighlight, PinItem::HIGHLIGHT_SEARCH);
+	}
+
+	fn find_alternate_pins(&self, idx : usize, name : &str) {
+	
+		for pin in &self.pins {
+			match pin.signals() {
+					Some(ref idx) => (),
+					None => ()
+				}
+		}
+
+//    emit highlightPins(list, PinItem::HIGHLIGHT_ALTERNATIVE);
+	}
+
+// Configures or resets pins belonging to peripheral
+
+//    Handles the configuration of pin with signals \p peripheralPins. Iterates through pins until finds pin with corresponding peripheral signal. Parameter \p state either sets the alternate signal on the pin if it's reset or resets the pin if it's configured with the same alternate signal.
+
+//    \param peripheralPins List of alternate functions to configure
+//    \param state Configure or reset the pin
+//
+//void Pins::onPeripheralPins(QList<QString> peripheralPins, Pin::PinState state)
+//{
+
+//    Pin::AlternateFunction alternateFunction;
+
+//    bool configured;
+
+//    // TODO: Handle when the are no pins available for configuration
+//    foreach (QString value, peripheralPins) {
+
+//        configured = false;
+
+//        foreach (pin, pins) {
+
+//            foreach (alternateFunction, pin->getAlternateFunctions()) {
+
+//                if (alternateFunction.name == value) {
+
+//                    if (state == Pin::PIN_ASSIGNED) {
+
+//                        if (pin->isReset()) {
+
+//                            //pin->setGpioMode(GPIOStr::gpioModeStr[3]);
+//                            pin->selectAlternateFunction(value);
+
+//                            //emit pinFunctionChanged (pin->getName(), state, value);
+
+//                            configured = true;
+
+//                            break;
+//                            }
+//                        }
+//                    else {
+
+//                        if (pin->getAlternateFunction().name == value) {
+
+//                            pin->resetPin();
+
+//                            //emit pinFunctionChanged (pin->getName(), Pin::Pins_RESET, "");
+
+//                            configured = true;
+
+//                            break;
+//                            }
+//                        }
+//                    }
+//                }
+
+//            if (configured){
+
+//                break;
+//                }
+//            }
+//        }
+//}
+}
+
+
 #[cfg(test)]
 mod tests {
 
@@ -170,7 +287,7 @@ mod tests {
 	#[test]
     fn pin_signals() {
 
-    	let mut pin = Pin::IO{ name: "PA3".to_string(), position: Position::Grid(4,3),
+    	let pin = Pin::IO{ name: "PA3".to_string(), position: Position::Grid(4,3),
     					params: Box::new(IOPin{	reset : true,
     											label : "".to_string(),
     											signals: vec!["Input".to_string(), "Output".to_string(), "EXTI".to_string()],
