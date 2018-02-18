@@ -1,19 +1,110 @@
 enum Package{}
 
-#[derive(PartialEq, Debug)]
-enum Position {
+#[derive(Serialize,PartialEq, Debug)]
+pub enum Position {
 	Linear(u16),
 	Grid(u8, u8)
 }
 
-struct IOPin {
+#[derive(Serialize, Debug)]
+pub struct IOPin<'a> {
 	reset: bool,
 	label: String,
 	signals: Vec<String>,
-	current: Option<usize>
+	current: &'a str
 }
 
-impl IOPin {
+impl <'a>IOPin<'a> {
+
+	fn reset(&mut self) {
+		self.reset = true;
+	}
+
+	fn is_reset(&self) -> bool {
+		self.reset
+	}
+
+	fn set_label (&mut self, label : &str) {
+
+		self.label = label.to_string();
+	}
+
+	fn label(&self) -> &str {
+	    &self.label
+	}
+
+	fn signals(&self) -> &Vec<String> {
+		&self.signals
+	}
+
+	fn select_signal(&mut self, signal: &str) -> bool {
+
+            true
+            /*
+		let idx = self.signals.iter().position(|ref r| r == &signal);
+		match idx {
+			Some(signal) => { 	self.current = &self.signals[signal];
+								true },
+			None => false,
+		}*/
+	}
+
+	fn current_signal(&self) -> &str {
+	
+		self.current
+	}
+}
+
+
+#[derive(Serialize, Debug)]
+pub enum Pin<'a> {
+	NC {name : String, position : Position}, 
+	IO {name : String, position : Position, params: Box<IOPin<'a>>},
+	BOOT {name : String, position : Position}, 
+	NRST {name : String, position : Position},
+	POWER {name : String, position : Position}
+}
+
+impl<'a> Pin<'a> {
+
+	pub fn name(&self) ->  &str {
+		match *self {
+			Pin::NC{ref name, ..} => &name,
+			Pin::IO{ref name, ..} => &name,
+			Pin::BOOT{ref name, ..} => &name,
+			Pin::NRST{ref name, ..} => &name,
+			Pin::POWER{ref name, ..} => &name,
+		}
+	}
+
+	pub fn position(&self) -> &Position {
+		match *self {
+			Pin::NC{ref position, ..} => &position,
+			Pin::IO{ref position, ..} => &position,
+			Pin::BOOT{ref position, ..} => &position,
+			Pin::NRST{ref position, ..} => &position,
+			Pin::POWER{ref position, ..} => &position,
+		}
+	}
+
+	pub fn params(&mut self) -> Option<&IOPin> {
+		match *self {
+		    Pin::IO{ref mut params, ..} => Some(params),
+		    _ => None,
+		}
+	}
+}
+
+/*
+#[derive(Serialize, Debug)]
+pub struct IOPin<'a> {
+	reset: bool,
+	label: String,
+	signals: Vec<String>,
+	current: &'a str
+}
+
+impl <'a>IOPin<'a> {
 
 	fn reset(&mut self) {
 		self.reset = true;
@@ -40,30 +131,28 @@ impl IOPin {
 		
 		let idx = self.signals.iter().position(|ref r| r == &signal);
 		match idx {
-			Some(signal) => { 	self.current = Some(signal);
+			Some(signal) => { 	self.current = &self.signals[signal];
 								true },
 			None => false,
 		}
 	}
 
-	fn current_signal(&self) -> Option<&str> {
+	fn current_signal(&self) -> &str {
 	
-		match self.current {
-			Some(idx) => Some(&self.signals[idx]),
-			None => None
-		}
+		self.current
 	}
 }
 
-enum Pin {
+#[derive(Serialize, Debug)]
+pub enum Pin<'a> {
 	NC {name : String, position : Position}, 
-	IO {name : String, position : Position, params: Box<IOPin>},
+	IO {name : String, position : Position, params: Box<IOPin<'a>>},
 	BOOT {name : String, position : Position}, 
 	NRST {name : String, position : Position},
 	POWER {name : String, position : Position}
 }
 
-impl Pin {
+impl<'a> Pin<'a> {
 
 	pub fn name(&self) ->  &str {
 		match *self {
@@ -134,122 +223,7 @@ impl Pin {
 		}
 	}
 }
-
-// Pins class
-//
-//    Holds configuration for all the pins. All pin modifications are connected to slots of this class.
-//
-//    \sa Peripheral, Pin
-//
-struct Pins {
-	pins : Vec<Pin>
-}
-
-impl Pins {
-
-	fn find_pin(&self, name : &str) {
-
-		for pin in &self.pins {
-
-			if name == pin.name() {
-
-				break;
-				}
-			else {
-				match pin.signals() {
-					Some(ref idx) => break,
-					None => ()
-				}
-			}
-		}
-
- //                    for (auto j = ioPin->getIOPinFunctions().begin(); j != ioPin->getIOPinFunctions().end(); j++) {
-
- //                        if ((*j).contains(str.toUpper())) {
-
- //                            pinsToHighlight.append(pins.indexOf(*i));
- //                            break;
- //                            }
- //                        }
- //                    
- //    emit highlightPins (pinsToHighlight, PinItem::HIGHLIGHT_SEARCH);
-	}
-
-	fn find_alternate_pins(&self, idx : usize, name : &str) {
-	
-		for pin in &self.pins {
-			match pin.signals() {
-					Some(ref idx) => (),
-					None => ()
-				}
-		}
-
-//    emit highlightPins(list, PinItem::HIGHLIGHT_ALTERNATIVE);
-	}
-
-// Configures or resets pins belonging to peripheral
-
-//    Handles the configuration of pin with signals \p peripheralPins. Iterates through pins until finds pin with corresponding peripheral signal. Parameter \p state either sets the alternate signal on the pin if it's reset or resets the pin if it's configured with the same alternate signal.
-
-//    \param peripheralPins List of alternate functions to configure
-//    \param state Configure or reset the pin
-//
-//void Pins::onPeripheralPins(QList<QString> peripheralPins, Pin::PinState state)
-//{
-
-//    Pin::AlternateFunction alternateFunction;
-
-//    bool configured;
-
-//    // TODO: Handle when the are no pins available for configuration
-//    foreach (QString value, peripheralPins) {
-
-//        configured = false;
-
-//        foreach (pin, pins) {
-
-//            foreach (alternateFunction, pin->getAlternateFunctions()) {
-
-//                if (alternateFunction.name == value) {
-
-//                    if (state == Pin::PIN_ASSIGNED) {
-
-//                        if (pin->isReset()) {
-
-//                            //pin->setGpioMode(GPIOStr::gpioModeStr[3]);
-//                            pin->selectAlternateFunction(value);
-
-//                            //emit pinFunctionChanged (pin->getName(), state, value);
-
-//                            configured = true;
-
-//                            break;
-//                            }
-//                        }
-//                    else {
-
-//                        if (pin->getAlternateFunction().name == value) {
-
-//                            pin->resetPin();
-
-//                            //emit pinFunctionChanged (pin->getName(), Pin::Pins_RESET, "");
-
-//                            configured = true;
-
-//                            break;
-//                            }
-//                        }
-//                    }
-//                }
-
-//            if (configured){
-
-//                break;
-//                }
-//            }
-//        }
-//}
-}
+*/
 
 
 #[cfg(test)]
