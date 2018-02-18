@@ -13,27 +13,27 @@ pub struct IOPin {
 }
 
 impl IOPin {
-    fn reset(&mut self) {
+    pub fn reset(&mut self) {
         self.reset = true;
     }
 
-    fn is_reset(&self) -> bool {
+    pub fn is_reset(&self) -> bool {
         self.reset
     }
 
-    fn set_label(&mut self, label: &str) {
+    pub fn set_label(&mut self, label: &str) {
         self.label = label.to_string();
     }
 
-    fn label(&self) -> &str {
+    pub fn label(&self) -> &str {
         &self.label
     }
 
-    fn signals(&self) -> &Vec<String> {
+    pub fn signals(&self) -> &Vec<String> {
         &self.signals
     }
 
-    fn select_signal(&mut self, signal: &str) -> bool {
+    pub fn select_signal(&mut self, signal: &str) -> bool {
         let position = self.signals.iter().position(|r| r == signal);
 
         match position {
@@ -48,7 +48,7 @@ impl IOPin {
         }
     }
 
-    fn current_signal(&self) -> Option<&str> {
+    pub fn current_signal(&self) -> Option<&str> {
         match self.current {
             Some(idx) => Some(&self.signals[idx]),
             None => None,

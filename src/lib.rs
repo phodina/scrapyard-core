@@ -3,14 +3,4 @@ extern crate serde;
 extern crate serde_derive;
 
 pub mod pin;
-
-/*
-struct Pins {
-	pins: Vec<pin::Pin>
-}
-
-impl Pins {
-
-
-} 
-*/
+pub mod pins;
