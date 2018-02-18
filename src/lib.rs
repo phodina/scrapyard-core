@@ -20,15 +20,17 @@ struct MCU {
     Name : String,
     Line : Option<String>,
     Family : Option<String>,
-    Package : Option<String>
+    Package : String,
+    #[serde(rename="IP")]
+    IPs: Vec<IP>,
+    #[serde(rename="Pin")]
+    Pins: Vec<Pin>
 }
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug)]
 struct MCUBuilder {
-    Mcu: MCU,
-    IPs: Option<Vec<IP>>,
-    Pins: Option<Vec<Pin>>
+    Mcu: MCU
 }
 
 #[allow(non_snake_case)]
@@ -42,7 +44,7 @@ struct IP {
 #[derive(Deserialize, Debug)]
 struct Pin {
 	Name : String,
-	Position : String,
+	Position : u16,
 	Type : String
 }
 
@@ -52,53 +54,58 @@ struct MCUConf {
 	eeprom : u32,
 	ram: u32,
 	frequency : u32,
-	iOs : u16,
+	ios : u16,
 	core : String,
 	name : String,
-	package : Option<String>,
+	package : String,
 	periherals: Option<Vec<String>>,
 	middlewares: Option<Vec<String>>,
 	components: Option<Vec<String>>,
 }
-/*
-enum MCU {
-    STM32, //(MCUConf),
-    STM8, //(MCUConf),
-    ATMEGA,// (MCUConf),
-    MSP430,// (MCUConf)
-}
 
-impl MCU {
-
-	fn create_peripherals (&self) {
-
-		for peripheral in self.IPs {
-		match self {
-		    MCU::STM32{} => println!("STM32"),
-		    _ => println!("OTHER"),
-		}	
-		}
-		
-	}
-}
-*/
 impl <'a>MCUBuilder {
 
-    fn new(path: &Path) -> Result<MCUBuilder, Box<Error>> {
+    pub fn new(path: &Path) -> Result<MCUBuilder, Box<Error>> {
         let file = File::open(path)?;
         let mcu_builder = serde_json::from_reader(file)?;
 
         Ok(mcu_builder)
     }
 
-    fn finish (self) -> MCUConf {
+    fn process_peripherals(&self) {
 
-        MCUConf {
+         for ip in &self.Mcu.IPs {
+            println!("Peripheral: {}", ip.Name);
+        }
+
+    }
+    
+    fn process_pins (&self) {
+
+         for pin in &self.Mcu.Pins {
+            println!("Pin: {}", pin.Name);
+        }
+    }
+
+    fn process_package (&self) {
+
+        match self.Mcu.Package.as_ref() {
+            "UFBGA176" => println!("count: {}", 201),
+            _ => println!("count: DIY")
+        }
+    }
+    
+    pub fn finish (self) -> MCUConf {
+
+        self.process_peripherals();
+        self.process_pins();
+        
+         MCUConf {
             flash : self.Mcu.Flash,
 	    eeprom : self.Mcu.Eeprom,
 	    ram: self.Mcu.Ram,
 	    frequency : self.Mcu.Frequency,
-	    iOs : self.Mcu.IOs,
+	    ios : self.Mcu.IOs,
 	    core : self.Mcu.Core,
 	    name : self.Mcu.Name,
 	    package : self.Mcu.Package,
@@ -107,47 +114,18 @@ impl <'a>MCUBuilder {
 	    components: None
         }
     }
-        /*
-	fn new(cfg_file: &str) -> Option<MCU> {
-		// TODO: Return Enum MCU or error
-    	let mcu_builder : MCUBuilder = serde_json::from_str(cfg_file).unwrap();
-    	
-    	let mut mcu = if mcu_builder.Name.starts_with("STM32") {
 
-    		MCU::STM32
-	    	}
-	    else if mcu_builder.Name.starts_with("STM8") {
+    fn create_peripheral(&mut self, name: &'a str) {
 
-	    	MCU::STM8
-	    	}
-	    else if mcu_builder.Name.starts_with("ATMEGA") {
+    }
 
-	    	MCU::ATMEGA
-	    	}
-	    else if mcu_builder.Name.starts_with("MSP430") {
+    fn create_middleware(&mut self, name: &'a str) {
 
-    		MCU::MSP430
-	    	}
-	    else {
-	    	    
-    		return None;
-	    	};
+    }
 
-	    mcu.create_peripherals();
-	    Some(mcu)
-	}*/
+    fn create_component(&mut self, name: &'a str) {
 
-	fn create_peripheral(&mut self, name: &'a str) {
-
-		}
-
-	fn create_middleware(&mut self, name: &'a str) {
-
-		}
-
-	fn create_component(&mut self, name: &'a str) {
-
-		}
+    }
 }
 
 
@@ -155,42 +133,42 @@ impl <'a>MCUBuilder {
 mod tests {
 
     use super::*;
-    
+
+    // TODO: Test no file
+    // TODO: Test json error
     #[test]
     fn mcubuilder_load() {
 
         let sample = Path::new("./samples/STM32F030C6Tx.json");
-        let mcubuilder = MCUBuilder::new(sample);
-        
-        assert_eq!(mcubuilder.is_ok(), true);
+        let mcubuilder = MCUBuilder::new(sample).unwrap();
+
+    	assert_eq!(mcubuilder.Mcu.Core, "ARM Cortex-M0");
+    	assert_eq!(mcubuilder.Mcu.Eeprom, 0);
+    	assert_eq!(mcubuilder.Mcu.Flash, 32);
+    	assert_eq!(mcubuilder.Mcu.Frequency, 48);
+    	assert_eq!(mcubuilder.Mcu.Name, "STM32F030C6Tx");
+    	assert_eq!(mcubuilder.Mcu.Package, "LQFP48");
+    	assert_eq!(mcubuilder.Mcu.Ram, 4);
+        assert_eq!(mcubuilder.Mcu.IPs.len(), 20);
+        //assert_eq!(mcubuilder.is_ok(), true);
     }
-        
+
     #[test]
-    fn mcubuilder_ok() {
+    fn mcubuilder_builder() {
 
-    	let json = r#"{ "Mcu": {"Core" : "ARM Cortex-M0",
-    					"Eeprom" : 0,
-    					"Family" : "STM32F0",
-    					"Flash" : 32,
-    					"Frequency" : 48,
-    					"IOs" : 39,
-    					"Line" : "STM32F0x0 Value Line",
-    					"Name" : "STM32F030C6Tx",
-    					"Package" : "LQFP48",
-    					"Ram" : 4 }}"#;
-    	
-    	let mcu_builder : MCUBuilder = serde_json::from_str(json).unwrap();
+        let sample = Path::new("./samples/STM32F030C6Tx.json");
+        let mcubuilder = MCUBuilder::new(sample).unwrap();
 
-    	assert_eq!(mcu_builder.Mcu.Core, "ARM Cortex-M0");
-    	assert_eq!(mcu_builder.Mcu.Eeprom, 0);
-    	assert_eq!(mcu_builder.Mcu.Family.unwrap(), "STM32F0");
-    	assert_eq!(mcu_builder.Mcu.Flash, 32);
-    	assert_eq!(mcu_builder.Mcu.Frequency, 48);
-    	assert_eq!(mcu_builder.Mcu.IOs, 39);
-    	assert_eq!(mcu_builder.Mcu.Line.unwrap(), "STM32F0x0 Value Line");
-    	assert_eq!(mcu_builder.Mcu.Name, "STM32F030C6Tx");
-    	assert_eq!(mcu_builder.Mcu.Package.unwrap(), "LQFP48");
-    	assert_eq!(mcu_builder.Mcu.Ram, 4);
+        let mcu_conf = mcubuilder.finish();
+
+    	assert_eq!(mcu_conf.core, "ARM Cortex-M0");
+    	assert_eq!(mcu_conf.eeprom, 0);
+    	assert_eq!(mcu_conf.flash, 32);
+    	assert_eq!(mcu_conf.frequency, 48);
+    	assert_eq!(mcu_conf.name, "STM32F030C6Tx");
+    	assert_eq!(mcu_conf.package, "LQFP48");
+    	assert_eq!(mcu_conf.ram, 4);
+        assert_eq!(mcu_conf.periherals.is_some(), false);
     }
 
     #[test]
@@ -208,14 +186,14 @@ mod tests {
     #[test]
     fn ip_ok() {
 
-    	let json = r#"{ "Name" : "adc.conf",
-    					"Position" : "4",
+    	let json = r#"{ "Name" : "VCC",
+    					"Position" : 4,
     					"Type" : "Power"}"#;
     	
     	let pin : Pin = serde_json::from_str(json).unwrap();
 
-    	assert_eq!(pin.Name, "adc.conf");
-    	assert_eq!(pin.Position, "4");
+    	assert_eq!(pin.Name, "VCC");
+    	assert_eq!(pin.Position, 4);
     	assert_eq!(pin.Type, "Power");
     }
 }
