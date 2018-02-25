@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Petr Hodina <hodinapetr46@gmail.com>"]
 
 [dependencies]
-serde = "1.0.15"
-serde_derive = "1.0.15"
 serde_json = "1.0.8"
-pins = { path = "../pins" }
+serde = "1.0.21"
+serde_derive = "1.0.21"
+serde-xml-rs = "0.2.1"

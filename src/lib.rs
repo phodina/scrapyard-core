@@ -1,9 +1,11 @@
+extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-
-extern crate pins;
-extern crate serde;
 extern crate serde_json;
+extern crate serde_xml_rs;
+
+pub mod pins;
+pub mod pin;
 
 use std::error::Error;
 use std::fs::File;
