@@ -2,12 +2,47 @@ use pin::Position;
 use pin::IOPin;
 use pin::Pin;
 
+use std::io::Read;
+
+mod parser {
+
+    use std::path::Path;
+    use std::error::Error;
+    use std::fs::File;
+    use serde_xml_rs;
+
+    #[allow(non_snake_case)]
+    #[derive(Deserialize)]
+    struct Signal {
+        Name: String,
+        Value: String,
+    }
+
+    #[allow(non_snake_case)]
+    #[derive(Deserialize)]
+    struct Pin {
+        Name: String,
+        Signal: Option<Vec<Signal>>,
+    }
+    #[allow(non_snake_case)]
+    #[derive(Deserialize)]
+    pub struct GPIO {
+        Pin: Vec<Pin>,
+    }
+
+    pub fn parse_pins(name: &Path) -> Result<GPIO, Box<Error>> {
+        let file = File::open(name)?;
+        let pins_parser = serde_xml_rs::deserialize(file)?;
+
+        Ok(pins_parser)
+    }
+}
+
 // Pins class
 //
 //    Holds configuration for all the pins. All pin modifications are connected to slots of this class.
 //
 //    \sa Peripheral, Pin
-//
 pub struct Pins {
     pins: Vec<Pin>,
 }
@@ -223,4 +258,15 @@ impl Pins {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+
+    use super::*;
+    use std::path::Path;
+
+    #[test]
+    fn load_pins_ok() {
+        let pins = parser::parse_pins(Path::new("./samples/GPIO-STM32F446_gpio_v1_0_Modes.xml"));
+
+        assert!(pins.is_ok());
+    }
+}
