@@ -1,3 +1,35 @@
+pub struct PinBuilder {}
+
+impl PinBuilder {
+    pub fn new(pin_type: &str) -> PinBuilder {
+        PinBuilder {}
+    }
+
+    pub fn position(&mut self, position: Position) -> PinBuilder {
+        PinBuilder {}
+    }
+
+    pub fn name(&mut self, name: &str) -> PinBuilder {
+        PinBuilder {}
+    }
+
+    pub fn signals(&mut self, signals: Vec<String>) -> PinBuilder {
+        PinBuilder {}
+    }
+
+    pub fn current(&mut self, current: &str) -> PinBuilder {
+        PinBuilder {}
+    }
+
+    pub fn finish(mut self) -> Pin {
+        let name = String::from("NC");
+        Pin::NC {
+            name: name,
+            position: Position::Grid(0, 0),
+        }
+    }
+}
+
 #[derive(Serialize, PartialEq, Debug)]
 pub enum Position {
     Linear(u16),

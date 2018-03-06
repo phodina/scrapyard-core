@@ -3,6 +3,7 @@ use std::fs::File;
 use std::path::Path;
 
 use module::peripheral::Peripheral;
+use pins::PinsBuilder;
 
 use serde_json;
 
@@ -44,9 +45,9 @@ struct IP {
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug)]
 pub struct Pin {
-    Name: String,
-    Position: u16,
-    Type: String,
+    pub Name: String,
+    pub Position: u16,
+    pub Type: String,
 }
 
 impl<'a> MCUBuilder {
@@ -60,22 +61,19 @@ impl<'a> MCUBuilder {
         })
     }
 
-    fn process_peripherals(&self) {
+    fn process_peripherals(&mut self) {
         let peripherals: Vec<Peripheral> = Vec::with_capacity(self.mcu.Mcu.IPs.len());
 
         for ip in &self.mcu.Mcu.IPs {
-            //peripherals.push(Peripheral { name: &ip.Name });
-            println!("Peripheral: {}", ip.Name);
+            match ip.Name.as_ref() {
+                name @ "GPIO" => {
+                    println!("IO peripheral {}, {}", name, ip.ConfigFile);
+                    let pins = PinsBuilder::new(&ip.Name, &ip.ConfigFile, &mut self.mcu.Mcu.Pins);
+                    //peripherals.push(pins.finish());
+                }
+                name => println!("Peripheral: {}, {}", name, ip.ConfigFile),
+            }
         }
-    }
-
-    fn process_pins(&self) {
-        /*
-        let pins = PinsBuilder::new(self.Mcu.Pins);
-
-        for pin in &self.Mcu.Pins {
-            println!("Pin: {}", pin.Name);
-        }*/
     }
 
     fn process_package(&self) {
@@ -85,9 +83,8 @@ impl<'a> MCUBuilder {
         }
     }
 
-    pub fn finish(self) -> MCUConf {
+    pub fn finish(mut self) -> MCUConf {
         self.process_peripherals();
-        self.process_pins();
 
         MCUConf {
             flash: self.mcu.Mcu.Flash,
@@ -195,4 +192,4 @@ mod tests {
         assert_eq!(pin.Position, 4);
         assert_eq!(pin.Type, "Power");
     }
-    }
+}

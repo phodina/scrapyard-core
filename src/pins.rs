@@ -1,14 +1,26 @@
-use pin::Pin;
-//use mcu::Pin;
+use pin::{IOPin, Pin, PinBuilder, Position};
+use mcu;
 
-pub struct PinsBuilder {}
+pub struct PinsBuilder {
+    pins: Vec<Pin>,
+}
 
 impl PinsBuilder {
-    pub fn new(pins: Vec<Pin>) -> PinsBuilder {
-        PinsBuilder {}
+    pub fn new(name: &str, configFile: &str, basic_pins: &mut Vec<mcu::Pin>) -> PinsBuilder {
+        let mut pins = Vec::with_capacity(basic_pins.len());
+
+        for pin in basic_pins.iter_mut() {
+            let pin2store = PinBuilder::new(&pin.Type).finish();
+            pins.push(pin2store);
+            println!("Building {}", pin.Name);
+        }
+
+        PinsBuilder { pins: pins }
     }
 
-    fn configure(&self) {}
+    pub fn finish(self) -> Pins {
+        Pins::new(self.pins)
+    }
 }
 
 mod parser {
@@ -45,7 +57,6 @@ mod parser {
     }
 }
 
-
 // Pins class
 //
 //    Holds configuration for all the pins. All pin modifications are connected to slots of this class.
@@ -56,99 +67,8 @@ pub struct Pins {
 }
 
 impl Pins {
-  
-  pub fn new(/*pins: &Vec<super::Pin>*/) -> Self {
-  /*
-        for pin in pins {
-            match pin.Type.as_ref() {
-                "Power" => (),
-                "I/O" => (),
-                "Reset" => (),
-                "Boot" => (),
-                _ => (),
-            }
-    */        
-        //}
-        /*
-        let pin0 = Pin::IO {
-            name: "PA0".to_string(),
-            position: Position::Linear(1),
-            params: Box::new(IOPin {
-                reset: true,
-                label: "Hello".to_string(),
-                signals: vec![
-                    "Input".to_string(),
-                    "Output".to_string(),
-                    "EXTI".to_string(),
-                ],
-                current: Some(0),
-            }),
-        };
-
-        let pin1 = Pin::IO {
-            name: "PA1".to_string(),
-            position: Position::Linear(2),
-            params: Box::new(IOPin {
-                reset: true,
-                label: "".to_string(),
-                signals: vec![
-                    "Input".to_string(),
-                    "Output".to_string(),
-                    "EXTI".to_string(),
-                ],
-                current: Some(0),
-            }),
-        };
-
-        let pin2 = Pin::IO {
-            name: "PA2".to_string(),
-            position: Position::Linear(3),
-            params: Box::new(IOPin {
-                reset: true,
-                label: "".to_string(),
-                signals: vec![
-                    "Input".to_string(),
-                    "Output".to_string(),
-                    "EXTI".to_string(),
-                ],
-                current: Some(0),
-            }),
-        };
-
-        let pin3 = Pin::IO {
-            name: "PA3".to_string(),
-            position: Position::Linear(4),
-            params: Box::new(IOPin {
-                reset: true,
-                label: "".to_string(),
-                signals: vec![
-                    "Input".to_string(),
-                    "Output".to_string(),
-                    "EXTI".to_string(),
-                ],
-                current: Some(0),
-            }),
-        };
-
-        let pin4 = Pin::IO {
-            name: "PA4".to_string(),
-            position: Position::Linear(5),
-            params: Box::new(IOPin {
-                reset: true,
-                label: "".to_string(),
-                signals: vec![
-                    "Input".to_string(),
-                    "Output".to_string(),
-                    "EXTI".to_string(),
-                ],
-                current: Some(0),
-            }),
-        };
-
-        Pins {
-            pins: vec![pin0, pin1, pin2, pin3, pin4],
-    }*/
-        Pins { pins: vec![] }
+    fn new(pins: Vec<Pin>) -> Self {
+        Pins { pins: pins }
     }
 
     pub fn pins(&self) -> &Vec<Pin> {
@@ -285,7 +205,7 @@ mod tests {
 
     #[test]
     fn load_pins_ok() {
-    /*
+        /*
         let pins = parser::parse_pins(Path::new("./samples/GPIO-STM32F446_gpio_v1_0_Modes.xml"));
 
         assert!(pins.is_ok());
