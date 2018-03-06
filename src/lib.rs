@@ -11,7 +11,34 @@ use std::error::Error;
 use std::fs::File;
 use std::path::Path;
 
-use pins::Pins;
+use pins::{Pins, PinsBuilder};
+
+struct Peripheral {}
+
+struct Middleware {}
+
+struct Component {}
+
+trait Module {
+    fn is_enabled() -> bool;
+    fn set_enabled(enable: bool);
+
+    fn get_name() -> String;
+    fn get_module_name() -> String;
+
+    fn is_configured() -> bool;
+
+    // TODO: Return Result
+    fn setup();
+
+    // TODO: Pass config & return Result
+    fn import();
+    fn export();
+
+    // TODO: Pass param & return param
+    fn set_param();
+    fn get_param();
+}
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug)]
@@ -32,8 +59,13 @@ struct MCU {
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug)]
-struct MCUBuilder {
+struct MCURoot {
     Mcu: MCU,
+}
+
+struct MCUBuilder {
+    mcu: MCURoot,
+    //pins: Option<PinsBuilder>,
 }
 
 #[allow(non_snake_case)]
@@ -45,7 +77,7 @@ struct IP {
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug)]
-struct Pin {
+pub struct Pin {
     Name: String,
     Position: u16,
     Type: String,
@@ -69,27 +101,31 @@ struct MCUConf {
 impl<'a> MCUBuilder {
     pub fn new(path: &Path) -> Result<MCUBuilder, Box<Error>> {
         let file = File::open(path)?;
-        let mcu_builder = serde_json::from_reader(file)?;
+        let mcu_root: MCURoot = serde_json::from_reader(file)?;
 
-        Ok(mcu_builder)
+        Ok(MCUBuilder {
+            mcu: mcu_root,
+            //          pins: None,
+        })
     }
 
     fn process_peripherals(&self) {
-        for ip in &self.Mcu.IPs {
+        for ip in &self.mcu.Mcu.IPs {
             println!("Peripheral: {}", ip.Name);
         }
     }
 
     fn process_pins(&self) {
-        let pins = Pins::new();
+        /*
+        let pins = PinsBuilder::new(self.Mcu.Pins);
 
         for pin in &self.Mcu.Pins {
             println!("Pin: {}", pin.Name);
-        }
+        }*/
     }
 
     fn process_package(&self) {
-        match self.Mcu.Package.as_ref() {
+        match self.mcu.Mcu.Package.as_ref() {
             "UFBGA176" => println!("count: {}", 201),
             _ => println!("count: DIY"),
         }
@@ -100,14 +136,14 @@ impl<'a> MCUBuilder {
         self.process_pins();
 
         MCUConf {
-            flash: self.Mcu.Flash,
-            eeprom: self.Mcu.Eeprom,
-            ram: self.Mcu.Ram,
-            frequency: self.Mcu.Frequency,
-            ios: self.Mcu.IOs,
-            core: self.Mcu.Core,
-            name: self.Mcu.Name,
-            package: self.Mcu.Package,
+            flash: self.mcu.Mcu.Flash,
+            eeprom: self.mcu.Mcu.Eeprom,
+            ram: self.mcu.Mcu.Ram,
+            frequency: self.mcu.Mcu.Frequency,
+            ios: self.mcu.Mcu.IOs,
+            core: self.mcu.Mcu.Core,
+            name: self.mcu.Mcu.Name,
+            package: self.mcu.Mcu.Package,
             periherals: None,
             middlewares: None,
             components: None,
@@ -125,7 +161,13 @@ impl<'a> MCUBuilder {
 mod tests {
 
     use super::*;
-
+    // TODO: Test for no file
+    #[test]
+    fn no_file() {
+        let sample = Path::new(".samples/none.json");
+        let mcubuilder = MCUBuilder::new(sample);
+        assert!(mcubuilder.err(), Err(std::io::ErrorKind::NotFound));
+    }
     // TODO: Test no file
     // TODO: Test json error
     #[test]
@@ -133,14 +175,14 @@ mod tests {
         let sample = Path::new("./samples/STM32F030C6Tx.json");
         let mcubuilder = MCUBuilder::new(sample).unwrap();
 
-        assert_eq!(mcubuilder.Mcu.Core, "ARM Cortex-M0");
-        assert_eq!(mcubuilder.Mcu.Eeprom, 0);
-        assert_eq!(mcubuilder.Mcu.Flash, 32);
-        assert_eq!(mcubuilder.Mcu.Frequency, 48);
-        assert_eq!(mcubuilder.Mcu.Name, "STM32F030C6Tx");
-        assert_eq!(mcubuilder.Mcu.Package, "LQFP48");
-        assert_eq!(mcubuilder.Mcu.Ram, 4);
-        assert_eq!(mcubuilder.Mcu.IPs.len(), 20);
+        assert_eq!(mcubuilder.mcu.Mcu.Core, "ARM Cortex-M0");
+        assert_eq!(mcubuilder.mcu.Mcu.Eeprom, 0);
+        assert_eq!(mcubuilder.mcu.Mcu.Flash, 32);
+        assert_eq!(mcubuilder.mcu.Mcu.Frequency, 48);
+        assert_eq!(mcubuilder.mcu.Mcu.Name, "STM32F030C6Tx");
+        assert_eq!(mcubuilder.mcu.Mcu.Package, "LQFP48");
+        assert_eq!(mcubuilder.mcu.Mcu.Ram, 4);
+        assert_eq!(mcubuilder.mcu.Mcu.IPs.len(), 20);
         //assert_eq!(mcubuilder.is_ok(), true);
     }
 

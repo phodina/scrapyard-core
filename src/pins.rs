@@ -4,6 +4,16 @@ use pin::Pin;
 
 use std::io::Read;
 
+pub struct PinsBuilder {}
+
+impl PinsBuilder {
+    pub fn new(pins: Vec<Pin>) -> PinsBuilder {
+        PinsBuilder {}
+    }
+
+    fn configure(&self) {}
+}
+
 mod parser {
 
     use std::path::Path;
@@ -48,7 +58,16 @@ pub struct Pins {
 }
 
 impl Pins {
-    pub fn new() -> Self {
+    pub fn new(pins: &Vec<super::Pin>) -> Self {
+        for pin in pins {
+            match pin.Type.as_ref() {
+                "Power" => (),
+                "I/O" => (),
+                "Reset" => (),
+                "Boot" => (),
+                _ => (),
+            }
+        }
         /*
         let pin0 = Pin::IO {
             name: "PA0".to_string(),
