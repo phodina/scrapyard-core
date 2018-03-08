@@ -7,6 +7,48 @@ use pins::PinsBuilder;
 
 use serde_json;
 
+#[derive(Serialize, Deserialize, Debug)]
+enum Package {
+    LQFP,
+    TSSOP,
+    WLCSP,
+    UFQFPN,
+    TFBGA,
+    VFQFPN,
+    EWLCSP,
+    UFBGA,
+}
+
+impl Package {
+    // TODO: Return error
+    fn new(package: &str) -> Package {
+        // TODO: Split number & name
+        match package {
+            "LQFP" => Package::LQFP,
+            "TSSOP" => Package::TSSOP,
+            "WLCSP" => Package::WLCSP,
+            "UFQFPN" => Package::UFQFPN,
+            "TFBGA" => Package::TFBGA,
+            "VFQFPN" => Package::VFQFPN,
+            "EWLCSP" => Package::EWLCSP,
+            "UFBGA" => Package::UFBGA,
+            &_ => Package::LQFP,
+        }
+    }
+
+    fn is_grid(&self) -> bool {
+        match *self {
+            Package::UFBGA => true,
+            Package::TFBGA => true,
+            Package::EWLCSP => true,
+            _ => false,
+        }
+    }
+
+    fn pins() -> u16 {
+        0
+    }
+}
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug)]
 struct MCU {
@@ -94,7 +136,7 @@ impl<'a> MCUBuilder {
             ios: self.mcu.Mcu.IOs,
             core: self.mcu.Mcu.Core,
             name: self.mcu.Mcu.Name,
-            package: self.mcu.Mcu.Package,
+            package: Package::new(&self.mcu.Mcu.Package),
             periherals: None,
             middlewares: None,
             components: None,
@@ -117,7 +159,7 @@ pub struct MCUConf {
     ios: u16,
     core: String,
     name: String,
-    package: String,
+    package: Package,
     periherals: Option<Vec<String>>,
     middlewares: Option<Vec<String>>,
     components: Option<Vec<String>>,
@@ -164,7 +206,10 @@ mod tests {
         assert_eq!(mcu_conf.flash, 32);
         assert_eq!(mcu_conf.frequency, 48);
         assert_eq!(mcu_conf.name, "STM32F030C6Tx");
-        assert_eq!(mcu_conf.package, "LQFP48");
+        match mcu_conf.package {
+            Package::LQFP => assert!(true),
+            _ => assert!(false),
+        };
         assert_eq!(mcu_conf.ram, 4);
         assert_eq!(mcu_conf.periherals.is_some(), false);
     }

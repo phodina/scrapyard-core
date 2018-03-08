@@ -308,6 +308,7 @@ mod tests {
         assert_eq!(params.current_signal().is_none(), true);
     }
 
+    // TODO: Create unknown Pin type and fail
     #[test]
     fn build_nc_pin() {
         let pinbuilder = PinBuilder::new("NC", Position::Linear(10), "NotConnected");
@@ -352,6 +353,7 @@ mod tests {
         }
     }
 
+    // TODO: Check signals
     #[test]
     fn build_io_pin() {
         let pinbuilder = PinBuilder::new("IO", Position::Linear(10), "VCC")

@@ -13,7 +13,7 @@ impl PinsBuilder {
             let pin2store =
                 PinBuilder::new(&pin.Type, Position::Linear(pin.Position), &pin.Name).finish();
             pins.push(pin2store);
-            println!("Building {}", pin.Name);
+            println!("Building {:?}", pin);
         }
 
         PinsBuilder { pins: pins }
