@@ -42,20 +42,22 @@ impl<'a> PinBuilder<'a> {
                 name: String::from(self.name),
                 position: self.position,
             },
-            "Power" => Pin::POWER {
+            "POWER" => Pin::POWER {
                 name: String::from(self.name),
                 position: self.position,
             },
-            "IO" => Pin::IO {
-                name: String::from(self.name),
-                position: self.position,
-                params: Box::new(IOPin {
-                    reset: true,
-                    label: String::new(),
-                    signals: self.signals.unwrap(),
-                    current: None,
-                }),
-            },
+            "IO" => {
+                return Pin::IO {
+                    name: String::from(self.name),
+                    position: self.position,
+                    params: Box::new(IOPin {
+                        reset: true,
+                        label: String::new(),
+                        signals: self.signals.unwrap(),
+                        current: None,
+                    }),
+                }
+            }
             &_ => Pin::NC {
                 name: String::from(self.name),
                 position: self.position,
@@ -308,18 +310,57 @@ mod tests {
 
     #[test]
     fn build_nc_pin() {
-        //assert!();
+        let pinbuilder = PinBuilder::new("NC", Position::Linear(10), "NotConnected");
+        let pin = pinbuilder.finish();
+
+        match pin {
+            Pin::NC { .. } => assert!(true),
+            _ => assert!(false),
+        }
     }
 
     #[test]
-    fn build_boot_pin() {}
+    fn build_boot_pin() {
+        let pinbuilder = PinBuilder::new("BOOT", Position::Linear(10), "WakeUp");
+        let pin = pinbuilder.finish();
+
+        match pin {
+            Pin::BOOT { .. } => assert!(true),
+            _ => assert!(false),
+        }
+    }
 
     #[test]
-    fn build_power_pin() {}
+    fn build_power_pin() {
+        let pinbuilder = PinBuilder::new("POWER", Position::Linear(10), "VCC");
+        let pin = pinbuilder.finish();
+
+        match pin {
+            Pin::POWER { .. } => assert!(true),
+            _ => assert!(false),
+        }
+    }
 
     #[test]
-    fn build_nrst_pin() {}
+    fn build_nrst_pin() {
+        let pinbuilder = PinBuilder::new("NRST", Position::Linear(10), "VCC");
+        let pin = pinbuilder.finish();
+
+        match pin {
+            Pin::NRST { .. } => assert!(true),
+            _ => assert!(false),
+        }
+    }
 
     #[test]
-    fn build_io_pin() {}
+    fn build_io_pin() {
+        let pinbuilder = PinBuilder::new("IO", Position::Linear(10), "VCC")
+            .signals(vec![String::from("Input"), String::from("Output")], "Input");
+        let pin = pinbuilder.finish();
+
+        match pin {
+            Pin::IO { .. } => assert!(true),
+            _ => assert!(false),
+        }
+    }
 }
