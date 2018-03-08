@@ -1,36 +1,70 @@
-pub struct PinBuilder {}
+pub struct PinBuilder<'a> {
+    pin_type: &'a str,
+    position: Position,
+    name: &'a str,
+    signals: Option<Vec<String>>,
+    current: Option<&'a str>,
+}
 
-impl PinBuilder {
-    pub fn new(pin_type: &str) -> PinBuilder {
-        PinBuilder {}
-    }
-
-    pub fn position(&mut self, position: Position) -> PinBuilder {
-        PinBuilder {}
-    }
-
-    pub fn name(&mut self, name: &str) -> PinBuilder {
-        PinBuilder {}
-    }
-
-    pub fn signals(&mut self, signals: Vec<String>) -> PinBuilder {
-        PinBuilder {}
-    }
-
-    pub fn current(&mut self, current: &str) -> PinBuilder {
-        PinBuilder {}
-    }
-
-    pub fn finish(mut self) -> Pin {
-        let name = String::from("NC");
-        Pin::NC {
+impl<'a> PinBuilder<'a> {
+    pub fn new(pin_type: &'a str, position: Position, name: &'a str) -> PinBuilder<'a> {
+        PinBuilder {
+            pin_type: pin_type,
             name: name,
-            position: Position::Grid(0, 0),
+            position: position,
+            signals: None,
+            current: None,
+        }
+    }
+
+    pub fn signals(&mut self, signals: Vec<String>, current: &'a str) -> PinBuilder<'a> {
+        PinBuilder {
+            pin_type: self.pin_type,
+            name: self.name,
+            position: self.position,
+            signals: Some(signals),
+            current: Some(current),
+        }
+    }
+
+    pub fn finish(self) -> Pin {
+        // TODO: Return also error
+        match self.pin_type {
+            "NC" => Pin::NC {
+                name: String::from(self.name),
+                position: self.position,
+            },
+            "BOOT" => Pin::BOOT {
+                name: String::from(self.name),
+                position: self.position,
+            },
+            "NRST" => Pin::NRST {
+                name: String::from(self.name),
+                position: self.position,
+            },
+            "Power" => Pin::POWER {
+                name: String::from(self.name),
+                position: self.position,
+            },
+            "IO" => Pin::IO {
+                name: String::from(self.name),
+                position: self.position,
+                params: Box::new(IOPin {
+                    reset: true,
+                    label: String::new(),
+                    signals: self.signals.unwrap(),
+                    current: None,
+                }),
+            },
+            &_ => Pin::NC {
+                name: String::from(self.name),
+                position: self.position,
+            },
         }
     }
 }
 
-#[derive(Serialize, PartialEq, Debug)]
+#[derive(Serialize, PartialEq, Debug, Clone, Copy)]
 pub enum Position {
     Linear(u16),
     Grid(u8, u8),
@@ -271,4 +305,21 @@ mod tests {
         assert_eq!(ret, false);
         assert_eq!(params.current_signal().is_none(), true);
     }
+
+    #[test]
+    fn build_nc_pin() {
+        //assert!();
+    }
+
+    #[test]
+    fn build_boot_pin() {}
+
+    #[test]
+    fn build_power_pin() {}
+
+    #[test]
+    fn build_nrst_pin() {}
+
+    #[test]
+    fn build_io_pin() {}
 }

@@ -10,7 +10,8 @@ impl PinsBuilder {
         let mut pins = Vec::with_capacity(basic_pins.len());
 
         for pin in basic_pins.iter_mut() {
-            let pin2store = PinBuilder::new(&pin.Type).finish();
+            let pin2store =
+                PinBuilder::new(&pin.Type, Position::Linear(pin.Position), &pin.Name).finish();
             pins.push(pin2store);
             println!("Building {}", pin.Name);
         }
