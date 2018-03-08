@@ -104,7 +104,7 @@ impl<'a> MCUBuilder {
     }
 
     fn process_peripherals(&mut self) {
-        let peripherals: Vec<Peripheral> = Vec::with_capacity(self.mcu.Mcu.IPs.len());
+        let mut peripherals: Vec<Peripheral> = Vec::with_capacity(self.mcu.Mcu.IPs.len());
 
         for ip in &self.mcu.Mcu.IPs {
             match ip.Name.as_ref() {
@@ -113,7 +113,12 @@ impl<'a> MCUBuilder {
                     let pins = PinsBuilder::new(&ip.Name, &ip.ConfigFile, &mut self.mcu.Mcu.Pins);
                     //peripherals.push(pins.finish());
                 }
-                name => println!("Peripheral: {}, {}", name, ip.ConfigFile),
+                name => {
+                    println!("Peripheral: {}, {}", name, ip.ConfigFile);
+                    let peripheral = Peripheral::new(&name, &ip.ConfigFile);
+                    peripheral.setup();
+                    peripherals.push(peripheral);
+                }
             }
         }
     }
@@ -142,12 +147,6 @@ impl<'a> MCUBuilder {
             components: None,
         }
     }
-
-    fn create_peripheral(&mut self, name: &'a str) {}
-
-    fn create_middleware(&mut self, name: &'a str) {}
-
-    fn create_component(&mut self, name: &'a str) {}
 }
 
 #[derive(Serialize, Deserialize, Debug)]
