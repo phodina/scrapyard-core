@@ -6,47 +6,66 @@ use module::peripheral::Peripheral;
 use pins::PinsBuilder;
 
 use serde_json;
+use regex::Regex;
 
 #[derive(Serialize, Deserialize, Debug)]
 enum Package {
-    LQFP,
-    TSSOP,
-    WLCSP,
-    UFQFPN,
-    TFBGA,
-    VFQFPN,
-    EWLCSP,
-    UFBGA,
+    LQFP(u16),
+    TSSOP(u16),
+    WLCSP(u16),
+    UFQFPN(u16),
+    TFBGA(u16),
+    VFQFPN(u16),
+    EWLCSP(u16),
+    UFBGA(u16),
+    Unknown(u16),
 }
 
 impl Package {
     // TODO: Return error
     fn new(package: &str) -> Package {
-        // TODO: Split number & name
-        match package {
-            "LQFP" => Package::LQFP,
-            "TSSOP" => Package::TSSOP,
-            "WLCSP" => Package::WLCSP,
-            "UFQFPN" => Package::UFQFPN,
-            "TFBGA" => Package::TFBGA,
-            "VFQFPN" => Package::VFQFPN,
-            "EWLCSP" => Package::EWLCSP,
-            "UFBGA" => Package::UFBGA,
-            &_ => Package::LQFP,
+        lazy_static! {
+            static ref RE :Regex = Regex::new(r"([[:alpha:]]*)(\d*)").unwrap();
+        }
+
+        let caps = RE.captures(package).unwrap();
+
+        let count = caps.get(2).unwrap().as_str().parse::<u16>().unwrap();
+
+        match caps.get(1).unwrap().as_str() {
+            "LQFP" => Package::LQFP(count),
+            "TSSOP" => Package::TSSOP(count),
+            "WLCSP" => Package::WLCSP(count),
+            "UFQFPN" => Package::UFQFPN(count),
+            "TFBGA" => Package::TFBGA(count),
+            "VFQFPN" => Package::VFQFPN(count),
+            "EWLCSP" => Package::EWLCSP(count),
+            "UFBGA" => Package::UFBGA(count),
+            &_ => Package::Unknown(count),
         }
     }
 
-    fn is_grid(&self) -> bool {
+    pub fn is_grid(&self) -> bool {
         match *self {
-            Package::UFBGA => true,
-            Package::TFBGA => true,
-            Package::EWLCSP => true,
+            Package::UFBGA(_) => true,
+            Package::TFBGA(_) => true,
+            Package::EWLCSP(_) => true,
             _ => false,
         }
     }
 
-    fn pins() -> u16 {
-        0
+    pub fn pins(&self) -> u16 {
+        match *self {
+            Package::LQFP(count) => count,
+            Package::TSSOP(count) => count,
+            Package::WLCSP(count) => count,
+            Package::UFQFPN(count) => count,
+            Package::TFBGA(count) => count,
+            Package::VFQFPN(count) => count,
+            Package::EWLCSP(count) => count,
+            Package::UFBGA(count) => count,
+            Package::Unknown(count) => count,
+        }
     }
 }
 #[allow(non_snake_case)]
@@ -123,16 +142,14 @@ impl<'a> MCUBuilder {
         }
     }
 
-    fn process_package(&self) {
-        match self.mcu.Mcu.Package.as_ref() {
-            "UFBGA176" => println!("count: {}", 201),
-            _ => println!("count: DIY"),
-        }
+    fn process_package(&self) -> Package {
+        Package::new(&self.mcu.Mcu.Package)
     }
 
     pub fn finish(mut self) -> MCUConf {
         self.process_peripherals();
 
+        let package = self.process_package();
         MCUConf {
             flash: self.mcu.Mcu.Flash,
             eeprom: self.mcu.Mcu.Eeprom,
@@ -141,7 +158,7 @@ impl<'a> MCUBuilder {
             ios: self.mcu.Mcu.IOs,
             core: self.mcu.Mcu.Core,
             name: self.mcu.Mcu.Name,
-            package: Package::new(&self.mcu.Mcu.Package),
+            package: package,
             periherals: None,
             middlewares: None,
             components: None,
@@ -206,7 +223,7 @@ mod tests {
         assert_eq!(mcu_conf.frequency, 48);
         assert_eq!(mcu_conf.name, "STM32F030C6Tx");
         match mcu_conf.package {
-            Package::LQFP => assert!(true),
+            Package::LQFP(_) => assert!(true),
             _ => assert!(false),
         };
         assert_eq!(mcu_conf.ram, 4);
@@ -235,5 +252,25 @@ mod tests {
         assert_eq!(pin.Name, "VCC");
         assert_eq!(pin.Position, 4);
         assert_eq!(pin.Type, "Power");
+    }
+
+    #[test]
+    fn package_lqfp48() {
+        let package_name = "LQFP48";
+
+        let package = Package::new(package_name);
+
+        assert_eq!(false, package.is_grid());
+        assert_eq!(48, package.pins());
+    }
+
+    #[test]
+    fn package_tfbga() {
+        let package_name = "TFBGA144";
+
+        let package = Package::new(package_name);
+
+        assert_eq!(true, package.is_grid());
+        assert_eq!(144, package.pins());
     }
 }

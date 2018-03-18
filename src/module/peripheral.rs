@@ -3,6 +3,8 @@ use std::fs::File;
 pub struct Peripheral {
     name: String,
     config: String,
+    enabled: bool,
+    configured: bool,
 }
 
 impl Peripheral {
@@ -10,6 +12,8 @@ impl Peripheral {
         Peripheral {
             name: String::from(name),
             config: String::from(config),
+            enabled: false,
+            configured: false,
         }
     }
 
