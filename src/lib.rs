@@ -8,7 +8,7 @@ extern crate serde_json;
 extern crate serde_xml_rs;
 
 pub mod mcu;
-
+pub mod package;
 pub mod module;
 
 pub mod irqs;
