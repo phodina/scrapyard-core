@@ -1,6 +1,6 @@
 use regex::Regex;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub enum Package {
     LQFP(u16),
     TSSOP(u16),

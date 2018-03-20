@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct PinBuilder<'a> {
     pin_type: &'a str,
     position: Position,
@@ -17,13 +18,13 @@ impl<'a> PinBuilder<'a> {
         }
     }
 
-    pub fn signals(&mut self, signals: Vec<String>, current: &'a str) -> PinBuilder<'a> {
+    pub fn signals(&mut self, signals: Vec<String>/*, current: &'a str*/) -> PinBuilder<'a> {
         PinBuilder {
             pin_type: self.pin_type,
             name: self.name,
             position: self.position,
             signals: Some(signals),
-            current: Some(current),
+            current: None//Some(current),
         }
     }
 
@@ -46,14 +47,17 @@ impl<'a> PinBuilder<'a> {
                 name: String::from(self.name),
                 position: self.position,
             },
-            "IO" => {
+            "I/O" => {
                 return Pin::IO {
                     name: String::from(self.name),
                     position: self.position,
                     params: Box::new(IOPin {
                         reset: true,
                         label: String::new(),
-                        signals: self.signals.unwrap(),
+                        signals: match self.signals{
+                            Some(s) => s,
+                            None => Vec::new()
+                        },
                         current: None,
                     }),
                 }
@@ -66,13 +70,13 @@ impl<'a> PinBuilder<'a> {
     }
 }
 
-#[derive(Serialize, PartialEq, Debug, Clone, Copy)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone, Copy)]
 pub enum Position {
     Linear(u16),
     Grid(u8, u8),
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct IOPin {
     reset: bool,
     label: String,
@@ -124,7 +128,7 @@ impl IOPin {
     }
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub enum Pin {
     NC {
         name: String,
@@ -344,7 +348,7 @@ mod tests {
 
     #[test]
     fn build_nrst_pin() {
-        let pinbuilder = PinBuilder::new("NRST", Position::Linear(10), "VCC");
+        let pinbuilder = PinBuilder::new("NRST", Position::Linear(10), "NRST");
         let pin = pinbuilder.finish();
 
         match pin {
@@ -356,8 +360,8 @@ mod tests {
     // TODO: Check signals
     #[test]
     fn build_io_pin() {
-        let pinbuilder = PinBuilder::new("IO", Position::Linear(10), "VCC")
-            .signals(vec![String::from("Input"), String::from("Output")], "Input");
+        let pinbuilder = PinBuilder::new("I/O", Position::Linear(10), "PA1")
+            .signals(vec![String::from("Input"), String::from("Output")], /*"Input"*/);
         let pin = pinbuilder.finish();
 
         match pin {

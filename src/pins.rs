@@ -1,17 +1,17 @@
-use pin::{IOPin, Pin, PinBuilder, Position};
-use mcu;
-
+use pin::Pin;
+/*
 pub struct PinsBuilder {
     pins: Vec<Pin>,
 }
 
 impl PinsBuilder {
-    pub fn new(name: &str, configFile: &str, basic_pins: &mut Vec<mcu::Pin>) -> PinsBuilder {
+    
+    pub fn new(name: &str, config_file: &str, basic_pins: &mut Vec<mcu::Pin>) -> PinsBuilder {
         let mut pins = Vec::with_capacity(basic_pins.len());
 
         for pin in basic_pins.iter_mut() {
             let pin2store =
-                PinBuilder::new(&pin.Type, Position::Linear(pin.Position), &pin.Name).finish();
+                PinBuilder::new(&pin.type_t, pin.position, &pin.name).finish();
             pins.push(pin2store);
             println!("Building {:?}", pin);
         }
@@ -23,46 +23,14 @@ impl PinsBuilder {
         Pins::new(self.pins)
     }
 }
-
-mod parser {
-
-    use std::path::Path;
-    use std::error::Error;
-    use std::fs::File;
-    use serde_xml_rs;
-
-    #[allow(non_snake_case)]
-    #[derive(Deserialize)]
-    struct Signal {
-        Name: String,
-        Value: String,
-    }
-
-    #[allow(non_snake_case)]
-    #[derive(Deserialize)]
-    struct Pin {
-        Name: String,
-        Signal: Option<Vec<Signal>>,
-    }
-    #[allow(non_snake_case)]
-    #[derive(Deserialize)]
-    pub struct GPIO {
-        Pin: Vec<Pin>,
-    }
-
-    pub fn parse_pins(name: &Path) -> Result<GPIO, Box<Error>> {
-        let file = File::open(name)?;
-        let pins_parser = serde_xml_rs::deserialize(file)?;
-
-        Ok(pins_parser)
-    }
-}
+*/
 
 // Pins class
 //
 //    Holds configuration for all the pins. All pin modifications are connected to slots of this class.
 //
 //    \sa Peripheral, Pin
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Pins {
     pins: Vec<Pin>,
 }

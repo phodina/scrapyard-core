@@ -3,10 +3,12 @@ name = "mcu"
 version = "0.1.0"
 authors = ["Petr Hodina <hodinapetr46@gmail.com>"]
 
+[root]
+name = "mcu"
+
 [dependencies]
 serde_json = "1.0.8"
 serde = "1.0.21"
 serde_derive = "1.0.21"
-serde-xml-rs = "0.2.1"
 regex = "0.2"
 lazy_static = "1.0.0"
