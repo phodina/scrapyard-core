@@ -55,14 +55,14 @@ impl Pins {
                 pins.push(idx);
                 }
             else {
-                /*
+                
                 match pin.params() {
                     Some(params) => match params.signals().iter().position(|ref s| s.contains(name)){
                         Some(_) => pins.push(idx),
                         None => (),
                     },
                     None => ()
-                    }*/
+                    }
                 }
             }
 
@@ -210,5 +210,33 @@ mod tests {
         let found = pins.find_pin("PA2");
 
         assert_eq!(vec![11], found);
+    }
+
+    
+    #[test]
+    fn find_signal_ok() {
+        let sample = Path::new("./samples/STM32F030C6Tx.json");
+        let mcu = MCU::new(sample).unwrap();
+
+        let mcu_conf = mcu.finish();
+        let pins = mcu_conf.get_pins();
+
+        let found = pins.find_pin("USART1_DE");
+
+        assert_eq!(vec![10,32], found);
+    }
+
+    #[test]
+    fn find_signal_empty() {
+        let sample = Path::new("./samples/STM32F030C6Tx.json");
+        let mcu = MCU::new(sample).unwrap();
+
+        let mcu_conf = mcu.finish();
+        let pins = mcu_conf.get_pins();
+
+        let found = pins.find_pin("XXXX");
+
+        let empty : Vec <usize> = Vec::new();
+        assert_eq!(empty, found);
     }
 }

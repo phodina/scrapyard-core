@@ -174,7 +174,14 @@ impl Pin {
         }
     }
 
-    pub fn params(&mut self) -> Option<&mut IOPin> {
+    pub fn params(& self) -> Option<& IOPin> {
+        match *self {
+            Pin::IO { ref params, .. } => Some(params),
+            _ => None,
+        }
+    }
+
+    pub fn params_mut(&mut self) -> Option<&mut IOPin> {
         match *self {
             Pin::IO { ref mut params, .. } => Some(params),
             _ => None,
@@ -228,7 +235,7 @@ mod tests {
             }),
         };
 
-        let params = pin.params().unwrap();
+        let params = pin.params_mut().unwrap();
         params.set_label("PWM");
 
         assert_eq!(params.label(), "PWM");
@@ -251,7 +258,7 @@ mod tests {
             }),
         };
 
-        let params = pin.params().unwrap();
+        let params = pin.params_mut().unwrap();
         let signals = params.signals();
 
         assert_eq!(
@@ -281,7 +288,7 @@ mod tests {
             }),
         };
 
-        let params = pin.params().unwrap();
+        let params = pin.params_mut().unwrap();
         let ret = params.select_signal("Output");
 
         assert_eq!(ret, true);
@@ -305,7 +312,7 @@ mod tests {
             }),
         };
 
-        let params = pin.params().unwrap();
+        let params = pin.params_mut().unwrap();
         let ret = params.select_signal("Missing");
 
         assert_eq!(ret, false);
