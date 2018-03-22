@@ -44,7 +44,6 @@ impl Pins {
         &self.pins
     }
 
-    // TODO: Detect also signals
     fn find_pin(&self, name: &str) -> Vec<usize>{
         let mut pins: Vec<usize> = vec![];
 
@@ -67,55 +66,22 @@ impl Pins {
             }
 
         pins
-
-        //let mut iter = IntoIterator::into_iter(&self.pins);
-
-        // loop {
-        //     match iter.next() {
-        //         Some(pin) => {
-
-        //         	
-        // 			else {
-        // 				match pin.signals() {
-        // 					Some(ref idx) => break,
-        // 					None => ()
-        // 					}
-        //         		}
-        //     		},
-        //         None => break,
-        //     }
-        //}
-
-        //                    for (auto j = ioPin->getIOPinFunctions().begin(); j != ioPin->getIOPinFunctions().end(); j++) {
-
-        //                        if ((*j).contains(str.toUpper())) {
-
-        //                            pinsToHighlight.append(pins.indexOf(*i));
-        //                            break;
-        //                            }
-        //                        }
-        //
-        //    emit highlightPins (pinsToHighlight, PinItem::HIGHLIGHT_SEARCH);
     }
 
-    fn find_alternate_pins(&mut self, idx: usize, name: &str) {
-        /*
-        for mut pin in &mut self.pins {
-            let params = pin.params();
+    fn find_alternate_pins(&self, idx: usize, name: &str) {
+        
+        let mut pins: Vec<usize> = vec![];
 
-            match params {
-                Some(params) => {
-                    let position = params.signals().iter().position(|r| r == name);
-                    match position {
-                        Some(_i) => (),
+        for (idx, pin) in self.pins.iter().enumerate() {
+
+            match pin.params() {
+                    Some(params) => match params.signals().iter().position(|ref s| s.contains(name)){
+                        Some(_) => pins.push(idx),
                         None => (),
+                    },
+                    None => ()
                     }
-                }
-                None => (),
-            }
-        }*/
-
-        //    emit highlightPins(list, PinItem::HIGHLIGHT_ALTERNATIVE);
+        }
     }
 
     // Configures or resets pins belonging to peripheral
@@ -238,5 +204,18 @@ mod tests {
 
         let empty : Vec <usize> = Vec::new();
         assert_eq!(empty, found);
+    }
+
+    #[test]
+    fn find_alternative_pins() {
+        let sample = Path::new("./samples/STM32F030C6Tx.json");
+        let mcu = MCU::new(sample).unwrap();
+
+        let mcu_conf = mcu.finish();
+        let pins = mcu_conf.get_pins();
+
+        let found = pins.find_pin("I2C1_SCL");
+
+        assert_eq!(vec![20, 29, 34, 41, 44], found);
     }
 }
