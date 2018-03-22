@@ -17,3 +17,4 @@ pub mod pins;
 pub mod pin;
 
 pub use mcu::MCU;
+pub use mcu::MCUConf;

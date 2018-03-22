@@ -32,7 +32,7 @@ impl PinsBuilder {
 //    \sa Peripheral, Pin
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Pins {
-    pins: Vec<Pin>,
+    pub pins: Vec<Pin>,
 }
 
 impl Pins {
@@ -83,6 +83,7 @@ impl Pins {
     }
 
     fn find_alternate_pins(&mut self, idx: usize, name: &str) {
+        
         for mut pin in &mut self.pins {
             let params = pin.params();
 
@@ -171,13 +172,23 @@ mod tests {
 
     use super::*;
     use std::path::Path;
+    use mcu::{MCU, MCUConf};
 
     #[test]
     fn load_pins_ok() {
-        /*
-        let pins = parser::parse_pins(Path::new("./samples/GPIO-STM32F446_gpio_v1_0_Modes.xml"));
+        let sample = Path::new("./samples/STM32F030C6Tx.json");
+        let mcu = MCU::new(sample).unwrap();
 
-        assert!(pins.is_ok());
-        */
+        let mcu_conf = mcu.finish();
+        let pins = mcu_conf.get_pins();
+    }
+
+    #[test]
+    fn find_pin_ok() {
+        let sample = Path::new("./samples/STM32F030C6Tx.json");
+        let mcu = MCU::new(sample).unwrap();
+
+        let mcu_conf = mcu.finish();
+        let pins = mcu_conf.get_pins();
     }
 }

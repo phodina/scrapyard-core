@@ -3,7 +3,8 @@ use std::fs::File;
 use std::path::Path;
 
 use module::peripheral::Peripheral;
-use pin::{Pin, Position};
+use pin::Pin;
+use pins::Pins;
 use package::Package;
 
 use serde_json;
@@ -63,7 +64,7 @@ impl MCU {
         }
     }
 
-    pub fn finish(mut self) -> MCUConf {
+    pub fn finish(self) -> MCUConf {
 
         let peripherals: Vec<String> = Vec::new();
         let middlewares: Vec<String> = Vec::new();
@@ -79,6 +80,7 @@ impl MCU {
             periherals: peripherals,
             middlewares: middlewares,
             components: components,
+            pins: Pins{ pins: self.pins}
         }
     }
 }
@@ -95,12 +97,21 @@ pub struct MCUConf {
     periherals: Vec<String>,
     middlewares: Vec<String>,
     components: Vec<String>,
+    pins: Pins
+}
+
+impl MCUConf{
+
+    pub fn get_pins(&self) -> & Pins {
+        &self.pins
+    }
 }
 
 #[cfg(test)]
 mod tests {
     // TODO: Check for memory and IPs
     use super::*;
+    use pin::Position;
     // TODO: Test for no file
     #[test]
     fn no_file() {
