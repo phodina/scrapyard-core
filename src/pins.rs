@@ -44,8 +44,29 @@ impl Pins {
         &self.pins
     }
 
-    fn find_pin(&self, name: &str) {
-        //let mut pins: Vec<usize> = vec![];
+    // TODO: Detect also signals
+    fn find_pin(&self, name: &str) -> Vec<usize>{
+        let mut pins: Vec<usize> = vec![];
+
+        for (idx, pin) in self.pins.iter().enumerate() {
+
+            if pin.name() == name {
+
+                pins.push(idx);
+                }
+            else {
+                /*
+                match pin.params() {
+                    Some(params) => match params.signals().iter().position(|ref s| s.contains(name)){
+                        Some(_) => pins.push(idx),
+                        None => (),
+                    },
+                    None => ()
+                    }*/
+                }
+            }
+
+        pins
 
         //let mut iter = IntoIterator::into_iter(&self.pins);
 
@@ -53,12 +74,7 @@ impl Pins {
         //     match iter.next() {
         //         Some(pin) => {
 
-        //         	pin.position(|ref r| r == &signal)
-        //             if name == pin.name() {
-
-        //             	match
-        //             	pins.push(iter.position());
-        // 				}
+        //         	
         // 			else {
         // 				match pin.signals() {
         // 					Some(ref idx) => break,
@@ -83,7 +99,7 @@ impl Pins {
     }
 
     fn find_alternate_pins(&mut self, idx: usize, name: &str) {
-        
+        /*
         for mut pin in &mut self.pins {
             let params = pin.params();
 
@@ -97,7 +113,7 @@ impl Pins {
                 }
                 None => (),
             }
-        }
+        }*/
 
         //    emit highlightPins(list, PinItem::HIGHLIGHT_ALTERNATIVE);
     }
@@ -190,5 +206,9 @@ mod tests {
 
         let mcu_conf = mcu.finish();
         let pins = mcu_conf.get_pins();
+
+        let found = pins.find_pin("PA2");
+
+        assert_eq!(vec![11], found);
     }
 }
