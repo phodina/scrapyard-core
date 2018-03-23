@@ -11,6 +11,36 @@ use serde_json;
 
 use memory::Memory;
 
+#[derive(Serialize, Deserialize, Debug)]
+pub enum Platform {
+    STM32 { family: String, line: String },
+    STM8,
+    AVR,
+    MSP430,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
+pub enum ARMCore {
+    CortexM0,
+    CortexM3,
+    CortexM4,
+    CortexM7,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
+pub enum Core {
+    ARM(ARMCore),
+    AVR,
+    STM8,
+    MSP430,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
+pub enum Frequency {
+    MHz(u16),
+}
+
+// TODO: Do not store Middleware as IP
 #[allow(non_snake_case)]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IP {
@@ -21,19 +51,14 @@ pub struct IP {
 #[allow(non_snake_case)]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MCU {
-
     pub memory: Vec<Memory>,
-    pub frequency: u32,
-    pub core: String,
+    pub frequency: Frequency,
+    pub core: Core,
     pub name: String,
     pub package: Package,
     pub ips: Vec<IP>,
     pub pins: Vec<Pin>,
-    /*
-    IOs: u16,
-    Line: Option<String>,
-    Family: Option<String>,
-    */
+    pub platform: Platform,
 }
 
 impl MCU {
@@ -44,7 +69,7 @@ impl MCU {
         Ok(mcu)
     }
 
-    fn process_peripherals(&mut self) {
+    fn process_peripherals(&self) -> Vec<Peripheral> {
         let mut peripherals: Vec<Peripheral> = Vec::with_capacity(self.ips.len());
 
         for ip in &self.ips {
@@ -62,48 +87,51 @@ impl MCU {
                 }
             }
         }
+
+        peripherals
     }
 
     pub fn finish(self) -> MCUConf {
-
-        let peripherals: Vec<String> = Vec::new();
+        let peripherals = self.process_peripherals();
         let middlewares: Vec<String> = Vec::new();
         let components: Vec<String> = Vec::new();
 
         MCUConf {
             memory: self.memory,
             frequency: self.frequency,
-            //ios: self.mcu.Mcu.IOs,
+            platform: self.platform,
             core: self.core,
             name: self.name,
             package: self.package,
             periherals: peripherals,
             middlewares: middlewares,
             components: components,
-            pins: Pins{ pins: self.pins}
+            pins: Pins { pins: self.pins },
         }
     }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MCUConf {
-    
     memory: Vec<Memory>,
-    frequency: u32,
-    //ios: u16,
-    core: String,
+    frequency: Frequency,
+    platform: Platform,
+    core: Core,
     name: String,
     package: Package,
-    periherals: Vec<String>,
+    periherals: Vec<Peripheral>,
     middlewares: Vec<String>,
     components: Vec<String>,
-    pins: Pins
+    pins: Pins,
 }
 
-impl MCUConf{
-
-    pub fn get_pins(&self) -> & Pins {
+impl MCUConf {
+    pub fn get_pins(&self) -> &Pins {
         &self.pins
+    }
+
+    pub fn get_peripherals(&self) -> &Vec<Peripheral> {
+        &self.periherals
     }
 }
 
@@ -127,11 +155,23 @@ mod tests {
         let sample = Path::new("./samples/STM32F030C6Tx.json");
         let mcu = MCU::new(sample).unwrap();
 
-        assert_eq!(mcu.core, "ARM Cortex-M0");
-        //assert_eq!(mcubuilder.mcu.Reprom, 0);
-        //assert_eq!(mcubuilder.mcu.Flash, 32);
-        //assert_eq!(mcubuilder.mcu.ram, 4);
-        assert_eq!(mcu.frequency, 48);
+        assert_eq!(mcu.core, Core::ARM(ARMCore::CortexM0));
+        assert_eq!(2, mcu.memory.len());
+        assert_eq!(
+            Memory::Flash {
+                start: 0x08000000,
+                size: 32,
+            },
+            mcu.memory[0]
+        );
+        assert_eq!(
+            Memory::Ram {
+                start: 0x20000000,
+                size: 4,
+            },
+            mcu.memory[1]
+        );
+        assert_eq!(mcu.frequency, Frequency::MHz(48));
         assert_eq!(mcu.name, "STM32F030C6Tx");
         assert_eq!(mcu.package, Package::LQFP(48));
         //assert_eq!(mcubuilder.mcu.ips.len(), 20);
@@ -145,11 +185,23 @@ mod tests {
 
         let mcu_conf = mcu.finish();
 
-        assert_eq!(mcu_conf.core, "ARM Cortex-M0");
-        //assert_eq!(mcu_conf.eeprom, 0);
-        //assert_eq!(mcu_conf.flash, 32);
-        //assert_eq!(mcu_conf.ram, 4);
-        assert_eq!(mcu_conf.frequency, 48);
+        assert_eq!(mcu_conf.core, Core::ARM(ARMCore::CortexM0));
+        assert_eq!(2, mcu_conf.memory.len());
+        assert_eq!(
+            Memory::Flash {
+                start: 0x08000000,
+                size: 32,
+            },
+            mcu_conf.memory[0]
+        );
+        assert_eq!(
+            Memory::Ram {
+                start: 0x20000000,
+                size: 4,
+            },
+            mcu_conf.memory[1]
+        );
+        assert_eq!(mcu_conf.frequency, Frequency::MHz(48));
         assert_eq!(mcu_conf.name, "STM32F030C6Tx");
         match mcu_conf.package {
             Package::LQFP(_) => assert!(true),
@@ -170,7 +222,6 @@ mod tests {
 
     #[test]
     fn pin_ok() {
-
         let json = r#"{"POWER":{"name":"VSS","position":{"Linear":47}}}"#;
 
         let pin: Pin = serde_json::from_str(json).unwrap();
@@ -178,7 +229,7 @@ mod tests {
         assert_eq!(pin.name(), "VSS");
         assert_eq!(*pin.position(), Position::Linear(47));
         match pin {
-            Pin::POWER{ .. } => assert!(true),
+            Pin::POWER { .. } => assert!(true),
             _ => assert!(false),
         };
     }

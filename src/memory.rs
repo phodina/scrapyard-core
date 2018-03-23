@@ -1,4 +1,4 @@
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub enum Memory {
     Flash { start: u32, size: u32 },
     Eeprom { start: u32, size: u32 },

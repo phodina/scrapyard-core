@@ -1,5 +1,6 @@
 use std::fs::File;
 
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Peripheral {
     name: String,
     config: String,
