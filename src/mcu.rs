@@ -160,14 +160,14 @@ mod tests {
         assert_eq!(
             Memory::Flash {
                 start: 0x08000000,
-                size: 32,
+                size: 32768,
             },
             mcu.memory[0]
         );
         assert_eq!(
             Memory::Ram {
                 start: 0x20000000,
-                size: 4,
+                size: 4096,
             },
             mcu.memory[1]
         );
@@ -190,14 +190,14 @@ mod tests {
         assert_eq!(
             Memory::Flash {
                 start: 0x08000000,
-                size: 32,
+                size: 32768,
             },
             mcu_conf.memory[0]
         );
         assert_eq!(
             Memory::Ram {
                 start: 0x20000000,
-                size: 4,
+                size: 4096,
             },
             mcu_conf.memory[1]
         );
