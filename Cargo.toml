@@ -2,13 +2,25 @@
 name = "mcu"
 version = "0.1.0"
 authors = ["Petr Hodina <hodinapetr46@gmail.com>"]
+build = "build.rs"
+
+[lib]
+crate-type = ["staticlib", "cdylib", "rlib"]
 
 [root]
 name = "mcu"
 
+[features]
+default=[]
+cc = ["cbindgen", "libc"]
+
+[build-dependencies]
+cbindgen = { version = "0.5.2", optional = true }
+
 [dependencies]
-serde_json = "1.0.8"
+serde_json = "1.0.13"
 serde = "1.0.21"
 serde_derive = "1.0.21"
 regex = "0.2"
 lazy_static = "1.0.0"
+libc = {version = "0.2.39",optional = true}

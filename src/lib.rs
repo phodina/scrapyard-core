@@ -6,6 +6,8 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 
+#[cfg(feature = "cc")]
+pub mod interface;
 pub mod mcu;
 pub mod memory;
 pub mod package;
@@ -18,3 +20,6 @@ pub mod pin;
 
 pub use mcu::MCU;
 pub use mcu::MCUConf;
+
+#[cfg(feature = "cc")]
+pub use interface::*;

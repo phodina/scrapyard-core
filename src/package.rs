@@ -10,6 +10,7 @@ pub enum Package {
     VFQFPN(u16),
     EWLCSP(u16),
     UFBGA(u16),
+    LFBGA(u16),
     Unknown(u16),
 }
 
@@ -33,6 +34,7 @@ impl Package {
             "VFQFPN" => Package::VFQFPN(count),
             "EWLCSP" => Package::EWLCSP(count),
             "UFBGA" => Package::UFBGA(count),
+            "LFBGA" => Package::LFBGA(count),
             &_ => Package::Unknown(count),
         }
     }
@@ -42,6 +44,8 @@ impl Package {
             Package::UFBGA(_) => true,
             Package::TFBGA(_) => true,
             Package::EWLCSP(_) => true,
+            Package::WLCSP(_) => true,
+            Package::LFBGA(_) => true,
             _ => false,
         }
     }
@@ -56,6 +60,7 @@ impl Package {
             Package::VFQFPN(count) => count,
             Package::EWLCSP(count) => count,
             Package::UFBGA(count) => count,
+            Package::LFBGA(count) => count,
             Package::Unknown(count) => count,
         }
     }
