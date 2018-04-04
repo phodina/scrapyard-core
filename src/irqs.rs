@@ -4,19 +4,13 @@ use std::path::Path;
 
 use serde_json;
 
-struct Interrupt {}
-
-struct Interrupts {
-    irqs: Vec<Interrupt>,
-}
-
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct IRQ {
-    Desc: String,
-    Value: String,
+    pub Desc: String,
+    pub Value: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct IRQS {
     #[serde(rename = "IRQS")] pub irqs: Vec<IRQ>,
 }
@@ -38,12 +32,12 @@ impl InterruptBuilder {
 mod tests {
 
     use super::*;
-    
+
     #[test]
     fn load_irqs() {
         let sample = Path::new("./samples/NVIC-STM32F042_Modes.json");
         let irqs = InterruptBuilder::new(sample);
 
         assert!(irqs.is_ok());
-        }
     }
+}

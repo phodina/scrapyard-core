@@ -8,7 +8,7 @@ use pins::Pins;
 use package::Package;
 
 use serde_json;
-
+use errors::*;
 use memory::Memory;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -40,7 +40,6 @@ pub enum Frequency {
     MHz(u16),
 }
 
-// TODO: Do not store Middleware as IP
 #[allow(non_snake_case)]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IP {
@@ -62,7 +61,7 @@ pub struct MCU {
 }
 
 impl MCU {
-    pub fn new(path: &Path) -> Result<MCU, Box<Error>> {
+    pub fn new(path: &Path) -> Result<MCU> {
         let file = File::open(path)?;
         let mcu: MCU = serde_json::from_reader(file)?;
 
@@ -174,8 +173,7 @@ mod tests {
         assert_eq!(mcu.frequency, Frequency::MHz(48));
         assert_eq!(mcu.name, "STM32F030C6Tx");
         assert_eq!(mcu.package, Package::LQFP(48));
-        //assert_eq!(mcubuilder.mcu.ips.len(), 20);
-        //assert_eq!(mcubuilder.is_ok(), true);
+        assert_eq!(mcu.ips.len(), 19);
     }
 
     #[test]

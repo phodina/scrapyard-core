@@ -18,17 +18,25 @@ impl<'a> PinBuilder<'a> {
         }
     }
 
-    pub fn signals(&mut self, signals: Vec<String>/*, current: &'a str*/) -> PinBuilder<'a> {
+    pub fn signals(&mut self, signals: Vec<String> , current: &'a str) -> PinBuilder<'a> {
         PinBuilder {
             pin_type: self.pin_type,
             name: self.name,
             position: self.position,
             signals: Some(signals),
-            current: None//Some(current),
+            current: Some(current),
         }
     }
 
     pub fn finish(self) -> Pin {
+
+        let sigs = self.signals.clone();
+
+        let current = match sigs {
+            Some(s) => s.iter().position(|ref r| r.as_str() == self.current.unwrap()),
+            None => None
+        };
+
         // TODO: Return also error
         match self.pin_type {
             "NC" => Pin::NC {
@@ -39,11 +47,11 @@ impl<'a> PinBuilder<'a> {
                 name: String::from(self.name),
                 position: self.position,
             },
-            "NRST" => Pin::NRST {
+            "Reset" => Pin::NRST {
                 name: String::from(self.name),
                 position: self.position,
             },
-            "POWER" => Pin::POWER {
+            "Power" => Pin::POWER {
                 name: String::from(self.name),
                 position: self.position,
             },
@@ -54,11 +62,11 @@ impl<'a> PinBuilder<'a> {
                     params: Box::new(IOPin {
                         reset: true,
                         label: String::new(),
-                        signals: match self.signals{
+                        signals: match self.signals {
                             Some(s) => s,
-                            None => Vec::new()
+                            None => Vec::new(),
                         },
-                        current: None,
+                        current: current,
                     }),
                 }
             }
@@ -106,9 +114,9 @@ impl IOPin {
     }
 
     pub fn select_signal(&mut self, signal: &str) -> bool {
-        let position = self.signals.iter().position(|r| r == signal);
+        let item = self.signals.iter().position(|r| r.as_str() == signal);
 
-        match position {
+        match item {
             Some(idx) => {
                 self.current = Some(idx);
                 true
@@ -121,6 +129,7 @@ impl IOPin {
     }
 
     pub fn current_signal(&self) -> Option<&str> {
+
         match self.current {
             Some(idx) => Some(&self.signals[idx]),
             None => None,
@@ -174,7 +183,7 @@ impl Pin {
         }
     }
 
-    pub fn params(& self) -> Option<& IOPin> {
+    pub fn params(&self) -> Option<&IOPin> {
         match *self {
             Pin::IO { ref params, .. } => Some(params),
             _ => None,
@@ -344,7 +353,7 @@ mod tests {
 
     #[test]
     fn build_power_pin() {
-        let pinbuilder = PinBuilder::new("POWER", Position::Linear(10), "VCC");
+        let pinbuilder = PinBuilder::new("Power", Position::Linear(10), "VCC");
         let pin = pinbuilder.finish();
 
         match pin {
@@ -355,7 +364,7 @@ mod tests {
 
     #[test]
     fn build_nrst_pin() {
-        let pinbuilder = PinBuilder::new("NRST", Position::Linear(10), "NRST");
+        let pinbuilder = PinBuilder::new("Reset", Position::Linear(10), "NRST");
         let pin = pinbuilder.finish();
 
         match pin {
@@ -368,7 +377,7 @@ mod tests {
     #[test]
     fn build_io_pin() {
         let pinbuilder = PinBuilder::new("I/O", Position::Linear(10), "PA1")
-            .signals(vec![String::from("Input"), String::from("Output")], /*"Input"*/);
+            .signals(vec![String::from("Input"), String::from("Output")], "Input");
         let pin = pinbuilder.finish();
 
         match pin {

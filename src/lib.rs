@@ -1,4 +1,6 @@
 #[macro_use]
+extern crate error_chain;
+#[macro_use]
 extern crate lazy_static;
 extern crate regex;
 extern crate serde;
@@ -12,11 +14,15 @@ pub mod mcu;
 pub mod memory;
 pub mod package;
 pub mod module;
+mod errors;
+
 
 pub mod irqs;
 
 pub mod pins;
 pub mod pin;
+
+use errors::*;
 
 pub use mcu::MCU;
 pub use mcu::MCUConf;

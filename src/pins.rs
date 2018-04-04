@@ -1,29 +1,4 @@
 use pin::Pin;
-/*
-pub struct PinsBuilder {
-    pins: Vec<Pin>,
-}
-
-impl PinsBuilder {
-    
-    pub fn new(name: &str, config_file: &str, basic_pins: &mut Vec<mcu::Pin>) -> PinsBuilder {
-        let mut pins = Vec::with_capacity(basic_pins.len());
-
-        for pin in basic_pins.iter_mut() {
-            let pin2store =
-                PinBuilder::new(&pin.type_t, pin.position, &pin.name).finish();
-            pins.push(pin2store);
-            println!("Building {:?}", pin);
-        }
-
-        PinsBuilder { pins: pins }
-    }
-
-    pub fn finish(self) -> Pins {
-        Pins::new(self.pins)
-    }
-}
-*/
 
 // Pins class
 //
@@ -44,43 +19,39 @@ impl Pins {
         &self.pins
     }
 
-    fn find_pin(&self, name: &str) -> Vec<usize>{
+    fn find_pin(&self, name: &str) -> Vec<usize> {
         let mut pins: Vec<usize> = vec![];
 
         for (idx, pin) in self.pins.iter().enumerate() {
-
             if pin.name() == name {
-
                 pins.push(idx);
-                }
-            else {
-                
+            } else {
                 match pin.params() {
-                    Some(params) => match params.signals().iter().position(|ref s| s.contains(name)){
-                        Some(_) => pins.push(idx),
-                        None => (),
-                    },
-                    None => ()
+                    Some(params) => {
+                        match params.signals().iter().position(|ref s| s.contains(name)) {
+                            Some(_) => pins.push(idx),
+                            None => (),
+                        }
                     }
+                    None => (),
                 }
             }
+        }
 
         pins
     }
 
     fn find_alternate_pins(&self, idx: usize, name: &str) {
-        
         let mut pins: Vec<usize> = vec![];
 
         for (idx, pin) in self.pins.iter().enumerate() {
-
             match pin.params() {
-                    Some(params) => match params.signals().iter().position(|ref s| s.contains(name)){
-                        Some(_) => pins.push(idx),
-                        None => (),
-                    },
-                    None => ()
-                    }
+                Some(params) => match params.signals().iter().position(|ref s| s.contains(name)) {
+                    Some(_) => pins.push(idx),
+                    None => (),
+                },
+                None => (),
+            }
         }
     }
 
@@ -154,7 +125,7 @@ mod tests {
 
     use super::*;
     use std::path::Path;
-    use mcu::{MCU, MCUConf};
+    use mcu::{MCUConf, MCU};
 
     #[test]
     fn load_pins_ok() {
@@ -178,7 +149,6 @@ mod tests {
         assert_eq!(vec![11], found);
     }
 
-    
     #[test]
     fn find_signal_ok() {
         let sample = Path::new("./samples/STM32F030C6Tx.json");
@@ -189,7 +159,7 @@ mod tests {
 
         let found = pins.find_pin("USART1_DE");
 
-        assert_eq!(vec![10,32], found);
+        assert_eq!(vec![10, 32], found);
     }
 
     #[test]
@@ -202,7 +172,7 @@ mod tests {
 
         let found = pins.find_pin("XXXX");
 
-        let empty : Vec <usize> = Vec::new();
+        let empty: Vec<usize> = Vec::new();
         assert_eq!(empty, found);
     }
 

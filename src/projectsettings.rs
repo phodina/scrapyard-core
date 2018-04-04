@@ -1,45 +1,72 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::env;
 
-struct MemorySection {
-    name: String,
-    size: u32,
-    addr: u32,
-}
-
-enum ProjectType {
-    Rust,
-    C,
-    CXX,
-    Python,
-}
-
-enum Framework {
-    CopyAll,
-    CopyNecessary,
-    MakefileReference,
-    SymlinkReference,
-}
-
-enum Modification {
-    Ask,
-    Modify,
+#[derive(Serialize, Deserialize, Debug)]
+enum CodeRegeneration {
+    OverwriteAll,
+    AskOnConflict,
+    KeepUserCode,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct ProjectSettings {
-    stackSize: u32,
-    stackAddr: u32,
-    heapSize: u32,
-    heapAddr: u32,
+pub struct ProjectSettings {
+    project_name: String,
+    project_path: PathBuf,
+    resources_path: PathBuf,
 
-    memorySections: Vec<MemorySection>,
-    projectName: String,
-    projectPath: PathBuf,
-    resourcesPath: PathBuf,
+    // File generation
+    separate_inits: bool,
+    backup_previous: bool,
+    remove_orphans: bool,
 
-    modificationStartegy: Modification,
-    generateSeparately: bool,
-    backupFiles: bool,
-    deleteOrphans: bool,
-    keepUserCode: bool,
+    // Code generation
+    keep_code: CodeRegeneration,
+    diff3_path: PathBuf,
+
+    // Memory options
+    stack_size: u32,
+    stack_addr: u32,
+    heap_size: u32,
+    heap_addr: u32,
+}
+
+impl ProjectSettings {
+    pub fn new() -> ProjectSettings {
+        // TODO: pass as args
+        let cwd = env::current_dir().unwrap();
+        let res = env::current_dir().unwrap();
+        let diff3 = env::current_dir().unwrap();
+
+        ProjectSettings {
+            project_name: String::new(),
+            project_path: cwd,
+            resources_path: res,
+            separate_inits: false,
+            backup_previous: true,
+            remove_orphans: false,
+            keep_code: CodeRegeneration::AskOnConflict,
+            diff3_path: diff3,
+            // TODO: Get MCUConf and get RAM type memory
+            stack_addr: 0,
+            stack_size: 0,
+            heap_addr: 0,
+            heap_size: 0,
+        }
+    }
+
+    pub fn get_project_path(&self) -> &Path {
+        &self.project_path
+    }
+
+    pub fn get_resources_path(&self) -> &Path {
+        &self.resources_path
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() {
+        let project_settings = ProjectSettings::new();
+    }
 }

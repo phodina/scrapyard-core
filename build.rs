@@ -1,6 +1,6 @@
 #[cfg(feature = "cc")]
 extern crate cbindgen;
-
+#[cfg(feature = "cc")]
 use std::env;
 
 fn main() {
