@@ -1,7 +1,5 @@
-use std::ffi::{CStr, CString};
-use std::path::Path;
+use std::ffi::CStr;
 use std::os::raw::c_char;
-use std;
 use libc;
 
 use pins::Pins;
@@ -47,6 +45,6 @@ pub mod cc {
             CStr::from_ptr(pin_name)
         };
 
-        pins.find_pin(pin_str.to_str().unwrap());
+        //pins.find_pin(pin_str.to_str().unwrap());
     }
 }

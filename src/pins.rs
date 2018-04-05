@@ -11,10 +11,6 @@ pub struct Pins {
 }
 
 impl Pins {
-    fn new(pins: Vec<Pin>) -> Self {
-        Pins { pins: pins }
-    }
-
     pub fn pins(&mut self) -> &Vec<Pin> {
         &mut self.pins
     }
@@ -62,7 +58,7 @@ impl Pins {
     //    \param peripheralPins List of alternate functions to configure
     //    \param state Configure or reset the pin
     //
-    fn peripheral_pins() {}
+    //fn peripheral_pins() {}
     //void Pins::onPeripheralPins(QList<QString> peripheralPins, Pin::PinState state)
     //{
 
@@ -123,17 +119,16 @@ impl Pins {
 #[cfg(test)]
 mod tests {
 
-    use super::*;
     use std::path::Path;
-    use mcu::{MCUConf, MCU};
+    use mcu::MCU;
 
     #[test]
     fn load_pins_ok() {
         let sample = Path::new("./samples/STM32F030C6Tx.json");
         let mcu = MCU::new(sample).unwrap();
 
-        let mcu_conf = mcu.finish();
-        let pins = mcu_conf.get_pins();
+        let mut mcu_conf = mcu.finish();
+        let _pins = mcu_conf.get_pins();
     }
 
     #[test]
@@ -141,7 +136,7 @@ mod tests {
         let sample = Path::new("./samples/STM32F030C6Tx.json");
         let mcu = MCU::new(sample).unwrap();
 
-        let mcu_conf = mcu.finish();
+        let mut mcu_conf = mcu.finish();
         let pins = mcu_conf.get_pins();
 
         let found = pins.find_pin("PA2");
@@ -154,7 +149,7 @@ mod tests {
         let sample = Path::new("./samples/STM32F030C6Tx.json");
         let mcu = MCU::new(sample).unwrap();
 
-        let mcu_conf = mcu.finish();
+        let mut mcu_conf = mcu.finish();
         let pins = mcu_conf.get_pins();
 
         let found = pins.find_pin("USART1_DE");
@@ -167,7 +162,7 @@ mod tests {
         let sample = Path::new("./samples/STM32F030C6Tx.json");
         let mcu = MCU::new(sample).unwrap();
 
-        let mcu_conf = mcu.finish();
+        let mut mcu_conf = mcu.finish();
         let pins = mcu_conf.get_pins();
 
         let found = pins.find_pin("XXXX");
@@ -181,7 +176,7 @@ mod tests {
         let sample = Path::new("./samples/STM32F030C6Tx.json");
         let mcu = MCU::new(sample).unwrap();
 
-        let mcu_conf = mcu.finish();
+        let mut mcu_conf = mcu.finish();
         let pins = mcu_conf.get_pins();
 
         let found = pins.find_pin("I2C1_SCL");

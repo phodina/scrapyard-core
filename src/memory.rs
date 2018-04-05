@@ -24,9 +24,9 @@ impl Memory {
 
     pub fn size(&self) -> u32 {
         match *self {
-            Memory::Flash { start, size } => size,
-            Memory::Eeprom { start, size } => size,
-            Memory::Ram { start, size } => size,
+            Memory::Flash { size, .. } => size,
+            Memory::Eeprom { size, .. } => size,
+            Memory::Ram { size, .. } => size,
         }
     }
 }

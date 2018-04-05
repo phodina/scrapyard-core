@@ -4,7 +4,7 @@ pub struct PinBuilder<'a> {
     position: Position,
     name: &'a str,
     signals: Option<Vec<String>>,
-    current: Option<&'a str>,
+    current: Option<usize>,
 }
 
 impl<'a> PinBuilder<'a> {
@@ -18,7 +18,7 @@ impl<'a> PinBuilder<'a> {
         }
     }
 
-    pub fn signals(&mut self, signals: Vec<String> , current: &'a str) -> PinBuilder<'a> {
+    pub fn signals(&mut self, signals: Vec<String>, current: usize) -> PinBuilder<'a> {
         PinBuilder {
             pin_type: self.pin_type,
             name: self.name,
@@ -29,12 +29,18 @@ impl<'a> PinBuilder<'a> {
     }
 
     pub fn finish(self) -> Pin {
-
-        let sigs = self.signals.clone();
-
-        let current = match sigs {
-            Some(s) => s.iter().position(|ref r| r.as_str() == self.current.unwrap()),
-            None => None
+        let current = match self.current {
+            Some(idx) => match &self.signals {
+                &Some(ref signals) => {
+                    if idx < signals.len() {
+                        Some(idx)
+                    } else {
+                        None
+                    }
+                }
+                &None => None,
+            },
+            None => None,
         };
 
         // TODO: Return also error
@@ -129,7 +135,6 @@ impl IOPin {
     }
 
     pub fn current_signal(&self) -> Option<&str> {
-
         match self.current {
             Some(idx) => Some(&self.signals[idx]),
             None => None,
@@ -216,7 +221,7 @@ mod tests {
 
     #[test]
     fn pin_reset() {
-        let mut pin = Pin::IO {
+        let pin = Pin::IO {
             name: "PA3".to_string(),
             position: Position::Grid(4, 3),
             params: Box::new(IOPin {
@@ -377,7 +382,7 @@ mod tests {
     #[test]
     fn build_io_pin() {
         let pinbuilder = PinBuilder::new("I/O", Position::Linear(10), "PA1")
-            .signals(vec![String::from("Input"), String::from("Output")], "Input");
+            .signals(vec![String::from("Input"), String::from("Output")], 0);
         let pin = pinbuilder.finish();
 
         match pin {

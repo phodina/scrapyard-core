@@ -1,3 +1,3 @@
-mod mcu;
-mod pins;
-mod pin;
+pub mod mcu;
+pub mod pins;
+pub mod pin;
