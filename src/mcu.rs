@@ -136,6 +136,10 @@ impl MCUConf {
     pub fn get_peripherals(&self) -> &Vec<Peripheral> {
         &self.periherals
     }
+
+    pub fn get_package(&mut self) -> &mut Package {
+        &mut self.package
+    }
 }
 
 #[cfg(test)]

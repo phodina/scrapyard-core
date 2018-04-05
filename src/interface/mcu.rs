@@ -3,8 +3,23 @@ use std::path::Path;
 use std::os::raw::c_char;
 use std;
 
+use package::Package;
 use pins::Pins;
 use mcu::{MCUConf, MCU};
+
+#[repr(C)]
+pub enum PackageType {
+    LQFP,
+    TSSOP,
+    WLCSP,
+    UFQFPN,
+    TFBGA,
+    VFQFPN,
+    EWLCSP,
+    UFBGA,
+    LFBGA,
+    NONE,
+}
 
 pub mod cc {
 
@@ -64,5 +79,46 @@ pub mod cc {
         };
 
         mcu_conf.get_pins()
+    }
+
+    #[no_mangle]
+    pub extern "C" fn mcu_conf_get_package(ptr: *mut MCUConf) -> *mut Package {
+        let mcu_conf = unsafe {
+            assert!(!ptr.is_null());
+            &mut *ptr
+        };
+
+        mcu_conf.get_package()
+    }
+
+    #[no_mangle]
+    pub extern "C" fn package_is_grid(ptr: *mut Package) -> bool {
+        let package = unsafe {
+            assert!(!ptr.is_null());
+            &mut *ptr
+        };
+
+        package.is_grid()
+    }
+
+    #[no_mangle]
+    pub extern "C" fn package_type(ptr: *mut Package) -> PackageType {
+        let package = unsafe {
+            assert!(!ptr.is_null());
+            &mut *ptr
+        };
+
+        match *package {
+            Package::LQFP(..) => PackageType::LQFP,
+            Package::TSSOP(..) => PackageType::TSSOP,
+            Package::WLCSP(..) => PackageType::WLCSP,
+            Package::UFQFPN(..) => PackageType::UFQFPN,
+            Package::TFBGA(..) => PackageType::TFBGA,
+            Package::VFQFPN(..) => PackageType::VFQFPN,
+            Package::EWLCSP(..) => PackageType::EWLCSP,
+            Package::UFBGA(..) => PackageType::UFBGA,
+            Package::LFBGA(..) => PackageType::LFBGA,
+            Package::Unknown(..) => PackageType::NONE,
+        }
     }
 }
