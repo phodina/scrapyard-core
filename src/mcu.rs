@@ -125,8 +125,12 @@ pub struct MCUConf {
 }
 
 impl MCUConf {
-    pub fn get_pins(&self) -> &Pins {
-        &self.pins
+    pub fn get_name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn get_pins(&mut self) -> &mut Pins {
+        &mut self.pins
     }
 
     pub fn get_peripherals(&self) -> &Vec<Peripheral> {

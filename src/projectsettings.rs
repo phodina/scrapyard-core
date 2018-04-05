@@ -1,6 +1,8 @@
 use std::path::{Path, PathBuf};
 use std::env;
 
+use cargo::Cargo;
+
 #[derive(Serialize, Deserialize, Debug)]
 enum CodeRegeneration {
     OverwriteAll,
@@ -28,6 +30,8 @@ pub struct ProjectSettings {
     stack_addr: u32,
     heap_size: u32,
     heap_addr: u32,
+
+    cargo: Cargo,
 }
 
 impl ProjectSettings {
@@ -51,6 +55,7 @@ impl ProjectSettings {
             stack_size: 0,
             heap_addr: 0,
             heap_size: 0,
+            cargo: Cargo::new(),
         }
     }
 
@@ -65,6 +70,9 @@ impl ProjectSettings {
 
 #[cfg(test)]
 mod tests {
+
+    use super::*;
+
     #[test]
     fn it_works() {
         let project_settings = ProjectSettings::new();

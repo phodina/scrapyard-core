@@ -15,11 +15,11 @@ impl Pins {
         Pins { pins: pins }
     }
 
-    pub fn pins(&self) -> &Vec<Pin> {
-        &self.pins
+    pub fn pins(&mut self) -> &Vec<Pin> {
+        &mut self.pins
     }
 
-    fn find_pin(&self, name: &str) -> Vec<usize> {
+    pub fn find_pin(&self, name: &str) -> Vec<usize> {
         let mut pins: Vec<usize> = vec![];
 
         for (idx, pin) in self.pins.iter().enumerate() {
@@ -41,7 +41,7 @@ impl Pins {
         pins
     }
 
-    fn find_alternate_pins(&self, idx: usize, name: &str) {
+    pub fn find_alternate_pins(&self, idx: usize, name: &str) {
         let mut pins: Vec<usize> = vec![];
 
         for (idx, pin) in self.pins.iter().enumerate() {

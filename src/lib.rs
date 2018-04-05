@@ -2,6 +2,8 @@
 extern crate error_chain;
 #[macro_use]
 extern crate lazy_static;
+#[cfg(feature = "cc")]
+extern crate libc;
 extern crate regex;
 extern crate serde;
 #[macro_use]
@@ -14,8 +16,9 @@ pub mod mcu;
 pub mod memory;
 pub mod package;
 pub mod module;
+pub mod projectsettings;
+mod cargo;
 mod errors;
-
 
 pub mod irqs;
 

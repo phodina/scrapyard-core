@@ -1,7 +1,14 @@
 extern crate mcu;
 
-#[test]
-fn load_mcu (){
+use mcu::{MCUConf, MCU};
+use std::path::Path;
 
-	assert!(true);
-	}
+#[test]
+fn load_mcu() {
+    let mcu = MCU::new(Path::new("samples/STM32F030C6Tx.json")).unwrap();
+    let mcu_conf = mcu.finish();
+
+    mcu_conf.get_pins().len();
+    mcu_conf.get_peripherals().len();
+    assert!(true);
+}
