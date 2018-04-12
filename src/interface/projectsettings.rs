@@ -3,54 +3,26 @@ use std::path::Path;
 use std::os::raw::c_char;
 use std;
 
-use module::peripheral::Peripheral;
-use package::Package;
-use pins::Pins;
-use mcu::{MCUConf, MCU};
-
-#[repr(C)]
-pub enum PackageType {
-    LQFP,
-    TSSOP,
-    WLCSP,
-    UFQFPN,
-    TFBGA,
-    VFQFPN,
-    EWLCSP,
-    UFBGA,
-    LFBGA,
-    NONE,
-}
+use projectsettings::ProjectSettings;
 
 pub mod cc {
 
     use super::*;
 
     #[no_mangle]
-    pub extern "C" fn mcu_conf_new(path: *const c_char) -> *mut MCUConf {
-        let path = unsafe {
-            assert!(!path.is_null());
-            CStr::from_ptr(path)
-        };
-
-        match path.to_str() {
-            Ok(path) => match MCU::new(Path::new(path)) {
-                Ok(mcu) => Box::into_raw(Box::new(mcu.finish())),
-                Err(_) => std::ptr::null_mut(),
-            },
-            Err(_) => std::ptr::null_mut(),
-        }
+    pub extern "C" fn project_settings_new() -> *mut ProjectSettings {
+        Box::into_raw(Box::new(ProjectSettings::new()))
     }
 
     #[no_mangle]
-    pub extern "C" fn mcu_conf_free(ptr: *mut MCUConf) {
+    pub extern "C" fn project_settings_free(ptr: *mut ProjectSettings) {
         if !ptr.is_null() {
             unsafe {
                 Box::from_raw(ptr);
             }
         }
     }
-
+    /*
     #[no_mangle]
     pub extern "C" fn mcu_conf_get_name(ptr: *mut MCUConf) -> *mut c_char {
         let mcu_conf = unsafe {
@@ -146,5 +118,5 @@ pub mod cc {
             Some(peripheral) => peripheral,
             None => std::ptr::null_mut(),
         }
-    }
+    }*/
 }

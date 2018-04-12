@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::fs::File;
 use std::path::Path;
 
@@ -33,6 +32,14 @@ pub enum Core {
     AVR,
     STM8,
     MSP430,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
+pub struct MemoryConfiguration {
+    stack_addr: u32,
+    stack_size: u32,
+    heap_addr: u32,
+    heap_size: u32,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -95,8 +102,16 @@ impl MCU {
         let middlewares: Vec<String> = Vec::new();
         let components: Vec<String> = Vec::new();
 
+        let memory_configuration = MemoryConfiguration {
+            stack_addr: 0,
+            stack_size: 0,
+            heap_addr: 0,
+            heap_size: 0,
+        };
+
         MCUConf {
             memory: self.memory,
+            memory_configuration: memory_configuration,
             frequency: self.frequency,
             platform: self.platform,
             core: self.core,
@@ -113,6 +128,7 @@ impl MCU {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MCUConf {
     memory: Vec<Memory>,
+    memory_configuration: MemoryConfiguration,
     frequency: Frequency,
     platform: Platform,
     core: Core,
@@ -129,7 +145,11 @@ impl MCUConf {
         &self.name
     }
 
-    pub fn get_pins(&mut self) -> &mut Pins {
+    pub fn get_pins(&self) -> &Pins {
+        &self.pins
+    }
+
+    pub fn get_pins_mut(&mut self) -> &mut Pins {
         &mut self.pins
     }
 
@@ -137,8 +157,40 @@ impl MCUConf {
         &self.periherals
     }
 
-    pub fn get_package(&mut self) -> &mut Package {
-        &mut self.package
+    pub fn get_peripherals_mut(&mut self) -> &mut Vec<Peripheral> {
+        &mut self.periherals
+    }
+
+    pub fn get_package(&self) -> &Package {
+        &self.package
+    }
+
+    pub fn get_platform(&self) -> &Platform {
+        &self.platform
+    }
+
+    pub fn get_frequency(&self) -> &Frequency {
+        &self.frequency
+    }
+
+    pub fn get_core(&self) -> &Core {
+        &self.core
+    }
+
+    pub fn get_memory(&self) -> &Vec<Memory> {
+        &self.memory
+    }
+
+    pub fn get_memory_mut(&mut self) -> &mut Vec<Memory> {
+        &mut self.memory
+    }
+
+    pub fn get_memory_configuration(&self) -> &MemoryConfiguration {
+        &self.memory_configuration
+    }
+
+    pub fn get_memory_configuration_mut(&mut self) -> &mut MemoryConfiguration {
+        &mut self.memory_configuration
     }
 }
 

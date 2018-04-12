@@ -2,7 +2,7 @@ use std::fs::File;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Peripheral {
-    name: String,
+    pub name: String,
     config: String,
     enabled: bool,
     configured: bool,

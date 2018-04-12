@@ -11,7 +11,11 @@ pub struct Pins {
 }
 
 impl Pins {
-    pub fn pins(&mut self) -> &Vec<Pin> {
+    pub fn pins(&self) -> &Vec<Pin> {
+        &self.pins
+    }
+
+    pub fn pins_mut(&mut self) -> &Vec<Pin> {
         &mut self.pins
     }
 
@@ -37,18 +41,22 @@ impl Pins {
         pins
     }
 
-    pub fn find_alternate_pins(&self, idx: usize, name: &str) {
+    pub fn find_alternate_pins(&self, pin_idx: usize, name: &str) -> Vec<usize> {
         let mut pins: Vec<usize> = vec![];
 
         for (idx, pin) in self.pins.iter().enumerate() {
             match pin.params() {
                 Some(params) => match params.signals().iter().position(|ref s| s.contains(name)) {
-                    Some(_) => pins.push(idx),
+                    Some(_) => if idx != pin_idx {
+                        pins.push(idx)
+                    },
                     None => (),
                 },
                 None => (),
             }
         }
+
+        pins
     }
 
     // Configures or resets pins belonging to peripheral
@@ -127,7 +135,7 @@ mod tests {
         let sample = Path::new("./samples/STM32F030C6Tx.json");
         let mcu = MCU::new(sample).unwrap();
 
-        let mut mcu_conf = mcu.finish();
+        let mcu_conf = mcu.finish();
         let _pins = mcu_conf.get_pins();
     }
 
@@ -136,7 +144,7 @@ mod tests {
         let sample = Path::new("./samples/STM32F030C6Tx.json");
         let mcu = MCU::new(sample).unwrap();
 
-        let mut mcu_conf = mcu.finish();
+        let mcu_conf = mcu.finish();
         let pins = mcu_conf.get_pins();
 
         let found = pins.find_pin("PA2");
@@ -149,7 +157,7 @@ mod tests {
         let sample = Path::new("./samples/STM32F030C6Tx.json");
         let mcu = MCU::new(sample).unwrap();
 
-        let mut mcu_conf = mcu.finish();
+        let mcu_conf = mcu.finish();
         let pins = mcu_conf.get_pins();
 
         let found = pins.find_pin("USART1_DE");
@@ -162,7 +170,7 @@ mod tests {
         let sample = Path::new("./samples/STM32F030C6Tx.json");
         let mcu = MCU::new(sample).unwrap();
 
-        let mut mcu_conf = mcu.finish();
+        let mcu_conf = mcu.finish();
         let pins = mcu_conf.get_pins();
 
         let found = pins.find_pin("XXXX");
@@ -172,15 +180,28 @@ mod tests {
     }
 
     #[test]
-    fn find_alternative_pins() {
+    fn find_alternative_pins_multiple() {
         let sample = Path::new("./samples/STM32F030C6Tx.json");
         let mcu = MCU::new(sample).unwrap();
 
-        let mut mcu_conf = mcu.finish();
+        let mcu_conf = mcu.finish();
         let pins = mcu_conf.get_pins();
 
-        let found = pins.find_pin("I2C1_SCL");
+        let found = pins.find_alternate_pins(13, "SPI1_NSS");
 
-        assert_eq!(vec![20, 29, 34, 41, 44], found);
+        assert_eq!(vec![24, 37], found);
+    }
+
+    #[test]
+    fn find_alternative_pins_none() {
+        let sample = Path::new("./samples/STM32F030C6Tx.json");
+        let mcu = MCU::new(sample).unwrap();
+
+        let mcu_conf = mcu.finish();
+        let pins = mcu_conf.get_pins();
+
+        let found = pins.find_alternate_pins(2, "RCC_OSC32_IN");
+
+        assert_eq!(Vec::<usize>::new(), found);
     }
 }

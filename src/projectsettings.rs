@@ -1,5 +1,6 @@
 use std::path::{Path, PathBuf};
-use std::env;
+
+use mcu::MCUConf;
 
 use cargo::Cargo;
 
@@ -24,47 +25,79 @@ pub struct ProjectSettings {
     // Code generation
     keep_code: CodeRegeneration,
     diff3_path: PathBuf,
-
-    // Memory options
-    stack_size: u32,
-    stack_addr: u32,
-    heap_size: u32,
-    heap_addr: u32,
-
     cargo: Cargo,
 }
 
 impl ProjectSettings {
-    pub fn new() -> ProjectSettings {
-        // TODO: pass as args
-        let cwd = env::current_dir().unwrap();
-        let res = env::current_dir().unwrap();
-        let diff3 = env::current_dir().unwrap();
-
+    pub fn new(
+        mcu_conf: &MCUConf,
+        project_path: &Path,
+        resources_path: &Path,
+        diff3_path: &Path,
+    ) -> ProjectSettings {
         ProjectSettings {
             project_name: String::new(),
-            project_path: cwd,
-            resources_path: res,
+            project_path: project_path.to_owned(),
+            resources_path: resources_path.to_owned(),
             separate_inits: false,
             backup_previous: true,
             remove_orphans: false,
             keep_code: CodeRegeneration::AskOnConflict,
-            diff3_path: diff3,
-            // TODO: Get MCUConf and get RAM type memory
-            stack_addr: 0,
-            stack_size: 0,
-            heap_addr: 0,
-            heap_size: 0,
-            cargo: Cargo::new(),
+            diff3_path: diff3_path.to_owned(),
+            cargo: Cargo::new(mcu_conf),
         }
+    }
+
+    pub fn set_project_path(&mut self, project_path: &Path) {
+        self.project_path = project_path.to_owned();
     }
 
     pub fn get_project_path(&self) -> &Path {
         &self.project_path
     }
 
+    pub fn set_resources_path(&mut self, resources_path: &Path) {
+        self.resources_path = resources_path.to_owned();
+    }
+
     pub fn get_resources_path(&self) -> &Path {
         &self.resources_path
+    }
+
+    pub fn get_cargo(&self) -> &Cargo {
+        &self.cargo
+    }
+
+    pub fn set_separate_inits(&mut self, value: bool) {
+        self.separate_inits = value;
+    }
+
+    pub fn get_separate_inits(&self) -> bool {
+        self.separate_inits
+    }
+
+    pub fn set_backup_previous(&mut self, value: bool) {
+        self.backup_previous = value;
+    }
+
+    pub fn get_backup_previous(&self) -> bool {
+        self.backup_previous
+    }
+
+    pub fn set_remove_orphans(&mut self, value: bool) {
+        self.remove_orphans = value;
+    }
+
+    pub fn get_remove_orphans(&self) -> bool {
+        self.remove_orphans
+    }
+
+    pub fn set_diff3_path(&mut self, path: &Path) {
+        self.diff3_path = path.to_owned();
+    }
+
+    pub fn get_diff3_path(&self) -> &Path {
+        &self.diff3_path.as_path()
     }
 }
 
@@ -72,9 +105,19 @@ impl ProjectSettings {
 mod tests {
 
     use super::*;
+    use mcu::MCU;
 
     #[test]
     fn it_works() {
-        let project_settings = ProjectSettings::new();
+        let sample = Path::new("./samples/STM32F030C6Tx.json");
+        let mcu = MCU::new(sample).unwrap();
+
+        let mcu_conf = mcu.finish();
+        let project_path = Path::new("");
+        let templates_path = Path::new("");
+        let diff3_path = Path::new("");
+
+        let project_settings =
+            ProjectSettings::new(&mcu_conf, &project_path, &templates_path, &diff3_path);
     }
 }

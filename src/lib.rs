@@ -17,7 +17,7 @@ pub mod memory;
 pub mod package;
 pub mod module;
 pub mod projectsettings;
-mod cargo;
+pub mod cargo;
 mod errors;
 
 pub mod irqs;

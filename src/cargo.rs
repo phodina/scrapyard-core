@@ -1,7 +1,7 @@
-use mcu::{ARMCore, Core};
+use mcu::{MCUConf, ARMCore, Core};
 
 #[derive(Serialize, Deserialize, Debug)]
-enum CrateType {
+pub enum CrateType {
     Binary,
     Library,
 }
@@ -26,10 +26,11 @@ pub struct Cargo {
     version: SemVer,
     authors: Vec<String>,
     dependencies: Vec<Dependency>,
+    target: String,
 }
 
 impl Cargo {
-    pub fn new() -> Cargo {
+    pub fn new(mcu_conf: &MCUConf) -> Cargo {
         Cargo {
             name: String::new(),
             crate_type: CrateType::Binary,
@@ -40,20 +41,15 @@ impl Cargo {
             },
             authors: Vec::new(),
             dependencies: Vec::new(),
+            target: Cargo::set_target(mcu_conf.get_core()),
         }
     }
-}
 
-#[derive(Deserialize, Debug)]
-pub struct CargoConfig {
-    target: String,
-}
-
-impl CargoConfig {
-    // TODO: Handle floating point
+	// TODO: Handle floating point
     // thumbv7em-none-eabihf
-    pub fn new(core: &Core) -> CargoConfig {
-        let target = match core {
+    fn set_target(core: &Core) -> String {
+
+    	match core {
             &Core::ARM(ref arm) => match arm {
                 &ARMCore::CortexM0 => String::from("thumbv6m-none-eabi"),
                 &ARMCore::CortexM3 => String::from("thumbv7m-none-eabi"),
@@ -63,8 +59,10 @@ impl CargoConfig {
             &Core::AVR => String::new(),
             &Core::STM8 => String::new(),
             &Core::MSP430 => String::new(),
-        };
+        }
+    }
 
-        CargoConfig { target: target }
+    pub fn get_crate_type(&self) -> &CrateType {
+        &self.crate_type
     }
 }
