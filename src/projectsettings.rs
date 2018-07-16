@@ -48,6 +48,14 @@ impl ProjectSettings {
         }
     }
 
+    pub fn set_project_name(&mut self, project_name: &str) {
+        self.project_name = project_name.to_owned();
+    }
+
+    pub fn get_project_name(&self) -> &str {
+        &self.project_name
+    }
+
     pub fn set_project_path(&mut self, project_path: &Path) {
         self.project_path = project_path.to_owned();
     }
@@ -66,6 +74,10 @@ impl ProjectSettings {
 
     pub fn get_cargo(&self) -> &Cargo {
         &self.cargo
+    }
+
+    pub fn get_cargo_mut(&mut self) -> &mut Cargo {
+        &mut self.cargo
     }
 
     pub fn set_separate_inits(&mut self, value: bool) {

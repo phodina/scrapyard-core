@@ -1,14 +1,16 @@
 [package]
-name = "mcu"
+name = "scrapyard-core"
 version = "0.1.0"
 authors = ["Petr Hodina <hodinapetr46@gmail.com>"]
 build = "build.rs"
+description = "Core crate for scrapyard containing MCU, Peripherals, ..."
+readme = "README.md"
+license = "MIT/Apache-2.0"
+repository = "https://github.com/phodina/scrapyard-core"
+homepage = "https://github.com/phodina/scrapyard-core"
 
 [lib]
-crate-type = ["staticlib", "cdylib", "rlib"]
-
-[root]
-name = "mcu"
+crate-type = ["cdylib", "rlib"]
 
 [features]
 default=[]

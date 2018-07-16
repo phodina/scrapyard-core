@@ -1,4 +1,4 @@
-use mcu::{MCUConf, ARMCore, Core};
+use mcu::{ARMCore, Core, MCUConf};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum CrateType {
@@ -7,16 +7,55 @@ pub enum CrateType {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct SemVer {
+pub struct SemVer {
     major: u8,
     minor: u8,
     patch: u8,
 }
 
+impl SemVer {
+    pub fn new(major: u8, minor: u8, patch: u8) -> SemVer {
+        SemVer {
+            major: major,
+            minor: minor,
+            patch: patch,
+        }
+    }
+
+    pub fn get_major(&self) -> u8 {
+        self.major
+    }
+
+    pub fn get_minor(&self) -> u8 {
+        self.minor
+    }
+
+    pub fn get_patch(&self) -> u8 {
+        self.patch
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug)]
-struct Dependency {
+pub struct Dependency {
     name: String,
     version: SemVer,
+}
+
+impl Dependency {
+    pub fn new(name: &str, version: SemVer) -> Dependency {
+        Dependency {
+            name: name.to_owned(),
+            version: version,
+        }
+    }
+
+    pub fn get_name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn get_version(&self) -> &SemVer {
+        &self.version
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -45,11 +84,14 @@ impl Cargo {
         }
     }
 
-	// TODO: Handle floating point
+    pub fn set_crate_name(&mut self, name: &str) {
+        self.name = name.to_owned()
+    }
+
+    // TODO: Handle floating point
     // thumbv7em-none-eabihf
     fn set_target(core: &Core) -> String {
-
-    	match core {
+        match core {
             &Core::ARM(ref arm) => match arm {
                 &ARMCore::CortexM0 => String::from("thumbv6m-none-eabi"),
                 &ARMCore::CortexM3 => String::from("thumbv7m-none-eabi"),
@@ -64,5 +106,13 @@ impl Cargo {
 
     pub fn get_crate_type(&self) -> &CrateType {
         &self.crate_type
+    }
+
+    pub fn add_crate(&mut self, dependency: Dependency) {
+        self.dependencies.push(dependency);
+    }
+
+    pub fn rm_crate(&mut self) {
+        unimplemented!();
     }
 }
